@@ -33,23 +33,32 @@ export class Arena {
   private render(): void {
     const b = this.cfg.biome.id;
     const s = this.scene;
-    // Outer border decoration.
-    const pad = 6;
+    // Bake the static ground (floor + outer border) into one texture: one draw call instead of ~1000.
+    const pad = 4;
+    const key = 'arena_ground';
+    if (s.textures.exists(key)) s.textures.remove(key);
+    const cv = document.createElement('canvas');
+    cv.width = (this.w + pad * 2) * TILE;
+    cv.height = (this.h + pad * 2) * TILE;
+    const ctx = cv.getContext('2d')!;
+    const src = (k: string) => s.textures.get(k).getSourceImage() as CanvasImageSource;
+    const edge = src(`${b}_edge`);
     for (let r = -pad; r < this.h + pad; r++)
       for (let c = -pad; c < this.w + pad; c++) {
-        if (c >= 0 && r >= 0 && c < this.w && r < this.h) continue;
-        s.add.image(c * TILE, r * TILE, `${b}_edge`).setOrigin(0).setDepth(-10);
+        const x = (c + pad) * TILE;
+        const y = (r + pad) * TILE;
+        if (c >= 0 && r >= 0 && c < this.w && r < this.h) {
+          const v = ((c + r) % 2) + ((c * 7 + r * 13) % 11 === 0 ? 2 : 0);
+          ctx.drawImage(src(`${b}_floor${v}`), x, y);
+        } else ctx.drawImage(edge, x, y);
       }
-    // Border wall ring drawn as a frame.
-    const g = s.add.graphics().setDepth(-5);
-    g.lineStyle(10, 0x000000, 0.35).strokeRect(-5, -5, this.pxW + 10, this.pxH + 10);
+    ctx.strokeStyle = 'rgba(0,0,0,0.35)';
+    ctx.lineWidth = 10;
+    ctx.strokeRect(pad * TILE - 5, pad * TILE - 5, this.pxW + 10, this.pxH + 10);
+    s.textures.addCanvas(key, cv);
+    s.add.image(-pad * TILE, -pad * TILE, key).setOrigin(0).setDepth(-10);
 
-    for (let r = 0; r < this.h; r++)
-      for (let c = 0; c < this.w; c++) {
-        const v = ((c + r) % 2) + (((c * 7 + r * 13) % 11 === 0 ? 2 : 0));
-        s.add.image(c * TILE, r * TILE, `${b}_floor${v}`).setOrigin(0).setDepth(-9);
-        this.placeObj(c, r);
-      }
+    for (let r = 0; r < this.h; r++) for (let c = 0; c < this.w; c++) this.placeObj(c, r);
   }
 
   private placeObj(c: number, r: number): void {

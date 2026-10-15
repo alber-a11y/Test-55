@@ -106,5 +106,5 @@ export const HEROES: HeroDef[] = [
 export const heroById = (id: string): HeroDef => HEROES.find((h) => h.id === id) ?? HEROES[0];
 
 export const MAX_HERO_LEVEL = 10;
-export const heroPowerMult = (level: number) => 1 + (level - 1) * 0.09;
+export const heroPowerMult = (level: number) => 1 + (level - 1) * 0.1;
 export const upgradeCost = (level: number) => Math.round((90 * Math.pow(1.5, level - 1)) / 10) * 10;

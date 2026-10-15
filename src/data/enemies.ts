@@ -32,8 +32,8 @@ export const ENEMIES: EnemyDef[] = [
     look: { body: '#f1faee', dark: '#e63946', eye: '#1d3557', shape: 'round', gear: 'cross' },
   },
   {
-    id: 'brute', hp: 4300, speed: 120, radius: 30, ai: 'rusher', prefRange: 2.5, coin: 4, minLevel: 11,
-    attack: { kind: 'spread', dmg: 360, range: 3.6, speed: 820, count: 3, spread: 0.45, reload: 1.6, sfx: 'shotgun', proj: 'e_bullet', charge: 0 },
+    id: 'brute', hp: 3600, speed: 120, radius: 30, ai: 'rusher', prefRange: 2.5, coin: 4, minLevel: 11,
+    attack: { kind: 'spread', dmg: 300, range: 3.6, speed: 820, count: 3, spread: 0.45, reload: 1.6, sfx: 'shotgun', proj: 'e_bullet', charge: 0 },
     look: { body: '#7f5539', dark: '#432818', eye: '#ffba08', shape: 'box', gear: 'shield' },
   },
   {

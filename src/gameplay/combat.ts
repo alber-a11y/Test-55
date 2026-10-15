@@ -64,7 +64,7 @@ export function fireAttack(b: Battle, u: Unit, spec: AttackSpec, angle: number, 
         b.later(i * 0.03, () => {
           if (!u.alive) return;
           b.shoot(u, u.team, u.x + Math.cos(a) * u.r, u.y + Math.sin(a) * u.r, a, {
-            ...base, dmg: dmg / 2, speed: (spec.speed ?? 700) * (0.85 + Math.random() * 0.3), r: 16, pierce: true, grow: 1.6, spin: 6, charge: spec.charge,
+            ...base, dmg: dmg / 2, speed: (spec.speed ?? 700) * (0.85 + Math.random() * 0.3), r: 16, pierce: true, grow: 0.9, spin: 6, charge: spec.charge,
           });
         });
       }
@@ -284,7 +284,7 @@ export function castSuper(b: Battle, u: Unit, sup: SuperSpec, angle: number, mag
         const y = u.y + Math.sin(angle) * d;
         const r = TILE * 0.75;
         b.later(i * 0.06, () => {
-          const img = b.scene.add.image(x, y - 10, 'soft').setTint(0xff7b00).setBlendMode('ADD').setDisplaySize(r * 2.6, r * 2.6).setDepth(2400);
+          const img = b.scene.add.image(x, y - 10, 'soft').setTint(0xff5400).setAlpha(0.75).setBlendMode('ADD').setDisplaySize(r * 2.1, r * 2.1).setDepth(2400);
           b.scene.tweens.add({ targets: img, scaleY: img.scaleY * 1.2, duration: 160, yoyo: true, repeat: -1 });
           b.addZone({
             x, y, r, dur: sup.duration ?? 4, team: u.team, gfx: img, tickEvery: 0.25,

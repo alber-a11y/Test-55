@@ -45,7 +45,8 @@ export class HudScene extends Phaser.Scene {
     this.gs = this.scene.get('Game') as GameScene;
     const W = this.scale.width;
     const H = this.scale.height;
-    this.touchMode = this.sys.game.device.input.touch && !this.sys.game.device.os.desktop;
+    const coarse = typeof matchMedia === 'function' && matchMedia('(pointer: coarse)').matches;
+    this.touchMode = this.sys.game.device.input.touch && (!this.sys.game.device.os.desktop || coarse);
     this.moveId = this.atkId = this.supId = -1;
     this.overlay = null;
 
@@ -233,8 +234,8 @@ export class HudScene extends Phaser.Scene {
   /* ---------------------------------------------------------------- frame */
 
   update(): void {
+    if (!this.gs.sys.isActive() || !this.gs.battle) return;
     const b = this.gs.battle;
-    if (!b) return;
     const inp = this.gs.inputState;
     const W = this.scale.width;
 

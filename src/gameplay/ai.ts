@@ -221,7 +221,7 @@ export function updateBrain(b: Battle, u: Unit, dt: number): void {
   }
   const ang = lob ? Math.atan2(tgt.y + (tgt.tag.vy ?? 0) * 0.3 - u.y, tgt.x + (tgt.tag.vx ?? 0) * 0.3 - u.x) : aimAt(b, u, tgt, spec.speed ?? 800);
   u.ammo--;
-  u.fireCd = 0.55 + Math.random() * 0.6;
+  u.fireCd = 0.8 + Math.random() * 0.8;
   u.sinceAttack = 0;
   u.revealT = 1;
   fireAttack(b, u, spec, ang, Math.min(1, dist / range));

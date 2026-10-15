@@ -20,7 +20,24 @@ function sizeOf(svg: string): [number, number] {
   return [w ? parseFloat(w[1]) : 64, h ? parseFloat(h[1]) : 64];
 }
 
-function rasterize(svg: string, scale: number): Promise<HTMLCanvasElement> {
+/**
+ * Art snippets compose a shared stroke preset with per-shape overrides
+ * (e.g. `${S} stroke-width="3"`); XML forbids duplicate attributes, so keep the last one.
+ */
+function dedupeAttrs(svg: string): string {
+  return svg.replace(/<([a-zA-Z]+)(\s[^<>]*?)(\/?)>/g, (_m, tag: string, attrs: string, close: string) => {
+    const seen = new Map<string, string>();
+    for (const a of attrs.matchAll(/([a-zA-Z:-]+)="([^"]*)"/g)) {
+      seen.delete(a[1]);
+      seen.set(a[1], a[2]);
+    }
+    const out = [...seen].map(([k, v]) => `${k}="${v}"`).join(' ');
+    return `<${tag}${out ? ' ' + out : ''}${close}>`;
+  });
+}
+
+function rasterize(svgSrc: string, scale: number): Promise<HTMLCanvasElement> {
+  const svg = dedupeAttrs(svgSrc);
   return new Promise((resolve, reject) => {
     const [w, h] = sizeOf(svg);
     const img = new Image();

@@ -37,9 +37,9 @@ export class ShopScene extends BaseScene {
     const tab: Tab = this.sceneData.tab ?? 'free';
     const page: number = this.sceneData.page ?? 0;
 
-    const tw = Math.min(200, (W - 420) / TABS.length);
+    const tw = Math.min(190, (W - 330 - 230) / TABS.length - 10);
     TABS.forEach((tb, i) => {
-      new Button(this, 330 + tw / 2 + i * (tw + 10), 50, { w: tw, h: 58, color: tb === tab ? 'yellow' : 'dark', label: t(`tab_${tb}`), size: 22 }).onClick(() => {
+      new Button(this, 320 + tw / 2 + i * (tw + 10), 50, { w: tw, h: 58, color: tb === tab ? 'yellow' : 'dark', label: t(`tab_${tb}`), size: 22 }).onClick(() => {
         this.sceneData.tab = tb;
         this.sceneData.page = 0;
         this.scene.restart(this.sceneData);
@@ -51,11 +51,11 @@ export class ShopScene extends BaseScene {
     const perPage = cols * 2;
     const pages = Math.max(1, Math.ceil(items.length / perPage));
     const cw = Math.min(230, (W - 80 - (cols - 1) * 16) / cols);
-    const ch = 250;
+    const ch = 232;
     const x0 = W / 2 - ((cols - 1) * (cw + 16)) / 2;
     items.slice(page * perPage, page * perPage + perPage).forEach((it, i) => {
       const x = x0 + (i % cols) * (cw + 16);
-      const y = 245 + Math.floor(i / cols) * (ch + 16);
+      const y = 116 + ch / 2 + Math.floor(i / cols) * (ch + 14);
       it(x, y, cw, ch);
     });
 
@@ -89,12 +89,12 @@ export class ShopScene extends BaseScene {
     g.fillStyle(0x1b1530, 1).fillRoundedRect(x - w / 2 - 3, y - h / 2 - 3, w + 6, h + 6, 18);
     g.fillStyle(tint, 1).fillRoundedRect(x - w / 2, y - h / 2, w, h, 16);
     g.fillStyle(0xffffff, 0.07).fillRoundedRect(x - w / 2 + 6, y - h / 2 + 6, w - 12, h * 0.48, 12);
-    const im = this.add.image(x, y - 22, img);
+    const im = this.add.image(x, y - 34, img);
     im.setScale(imgScale);
-    if (im.displayHeight > h * 0.5) im.setScale((imgScale * h * 0.5) / im.displayHeight);
-    txt(this, x, y + 40, title, 20, '#ffffff', { wordWrap: { width: w - 12 } });
-    if (sub) txt(this, x, y + 64, sub, 14, '#bde0fe', { wordWrap: { width: w - 12 } });
-    const b = new Button(this, x, y + h / 2 - 32, { w: w - 24, h: 50, color: btn.color, label: btn.label, size: 20, icon: btn.icon, iconSize: 32 });
+    if (im.displayHeight > h * 0.46) im.setScale((imgScale * h * 0.46) / im.displayHeight);
+    txt(this, x, y + 28, title, 20, '#ffffff', { wordWrap: { width: w - 12 } });
+    if (sub) txt(this, x, y + 52, sub, 14, '#bde0fe', { wordWrap: { width: w - 12 } });
+    const b = new Button(this, x, y + h / 2 - 30, { w: w - 24, h: 46, color: btn.color, label: btn.label, size: 20, icon: btn.icon, iconSize: 32 });
     b.setEnabled(btn.enabled ?? true);
     if (btn.onClick) {
       b.onClick(async () => {

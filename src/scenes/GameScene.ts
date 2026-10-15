@@ -64,6 +64,7 @@ export class GameScene extends Phaser.Scene {
       this.events.off('superUsed');
       this.events.off('coin');
       this.battle.destroy();
+      this.scene.stop('Hud');
       pauseHub.set('menu', false);
       pauseHub.set('dialog', false);
     });

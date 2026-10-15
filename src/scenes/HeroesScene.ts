@@ -97,9 +97,9 @@ export class HeroesScene extends BaseScene {
       txt(this, tx, y, title, 18, '#ffd166').setOrigin(0, 0);
       txt(this, tx, y + 22, body, 16, '#ffffff', { wordWrap: { width: tw }, align: 'left' }).setOrigin(0, 0);
     };
-    desc(244, t('attack'), t(`atk_${h.id}`));
-    desc(306, t('super'), t(`sup_${h.id}`));
-    desc(368, t('passive'), t(`pas_${h.id}`));
+    desc(240, t('attack'), t(`atk_${h.id}`));
+    desc(308, t('super'), t(`sup_${h.id}`));
+    desc(376, t('passive'), t(`pas_${h.id}`));
 
     // Skins.
     const skins = skinsOf(h.id);

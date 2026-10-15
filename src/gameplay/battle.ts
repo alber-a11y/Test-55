@@ -78,6 +78,8 @@ export interface Zone {
 }
 
 export interface Tele {
+  /** Ground area for circular telegraphs (used by tests / AI hints). */
+  zone?: { x: number; y: number; r: number };
   t: number;
   dur: number;
   gfx: Phaser.GameObjects.Graphics;
@@ -254,12 +256,12 @@ export class Battle {
       const f = (Math.floor(i / 4) + 0.5) / 2;
       const x = edge === 0 ? 0 : edge === 1 ? this.arena.pxW : this.arena.pxW * f;
       const y = edge === 2 ? 0 : edge === 3 ? this.arena.pxH : this.arena.pxH * f;
-      const r = TILE * 2.2;
+      const r = TILE * 1.8;
       const img = this.scene.add.image(x, y, 'soft').setDisplaySize(r * 2.4, r * 2.4).setTint(0x80ff72).setAlpha(0.55).setDepth(2900);
       this.scene.tweens.add({ targets: img, alpha: 0.35, duration: 1200, yoyo: true, repeat: -1 });
       this.addZone({
         x, y, r, dur: 1e9, team: -1, gfx: img, tickEvery: 0.5,
-        tick: (z) => this.unitsIn(z.x, z.y, z.r, -1).forEach((u) => this.damage(u, u.maxHp * 0.05, null, { noCharge: true })),
+        tick: (z) => this.unitsIn(z.x, z.y, z.r, -1).forEach((u) => this.damage(u, u.maxHp * 0.03, null, { noCharge: true })),
       });
     }
   }
@@ -325,7 +327,7 @@ export class Battle {
   teleCircle(x: number, y: number, r: number, dur: number, color: number, done: () => void, owner?: Unit): void {
     const g = this.scene.add.graphics().setDepth(2);
     this.teles.push({
-      t: 0, dur, gfx: g, owner, done,
+      zone: { x, y, r }, t: 0, dur, gfx: g, owner, done,
       draw: (gg, p) => {
         gg.clear();
         gg.fillStyle(color, 0.18).fillCircle(x, y, r);
@@ -597,7 +599,7 @@ export class Battle {
       const sp = spawns[k % spawns.length];
       const pos = this.arena.freeSpot(sp.c, sp.r);
       const jitter = k >= spawns.length ? 40 : 0;
-      this.spawnWithPortal(id, pos.x + (Math.random() - 0.5) * jitter, pos.y + (Math.random() - 0.5) * jitter, false, k * 0.3);
+      this.spawnWithPortal(id, pos.x + (Math.random() - 0.5) * jitter, pos.y + (Math.random() - 0.5) * jitter, false, k * 0.6);
     });
   }
 
@@ -622,7 +624,7 @@ export class Battle {
         x: pos.x,
         y: pos.y,
         r: bd.radius,
-        hp: Math.round(bd.hp * df.hp * (1 + tier * 0.3)),
+        hp: Math.round(bd.hp * df.hp * (1 + tier * 0.15)),
         speed: bd.speed * df.speed,
         attack: { kind: 'shot', dmg: 0, range: 0, reload: 1, sfx: '', charge: 0 },
         texture: `boss_${bd.id}`,

@@ -55,7 +55,7 @@ async function boot(): Promise<void> {
       else game.scale.refresh();
     }, 150);
   });
-  (window as any).__game = game;
+  if (new URLSearchParams(location.search).has('debug')) Object.assign(window as any, { __game: game, __save: save });
 }
 
 void boot();

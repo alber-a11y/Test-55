@@ -373,9 +373,9 @@ function generate(n: number, rng: Rng) {
 export function difficulty(n: number): Difficulty {
   const k = Math.pow(n - 1, 0.92);
   return {
-    hp: 1 + 0.085 * k,
-    dmg: 1 + 0.055 * k,
-    aimErr: Math.max(0.03, 0.2 - n * 0.008),
+    hp: 0.8 + 0.045 * k,
+    dmg: 0.7 + 0.025 * k,
+    aimErr: Math.max(0.08, 0.32 - n * 0.01),
     fireRate: Math.max(0.62, 1 - n * 0.012),
     speed: 1 + Math.min(0.18, n * 0.006),
   };
@@ -386,11 +386,11 @@ export function buildLevel(n: number): LevelConfig {
   const biome = biomeForLevel(n);
   const map = n <= HAND.length ? parseHand(HAND[n - 1]) : generate(n, rng);
 
-  const waveCount = 2 + (n >= 4 ? 1 : 0) + (n >= 14 ? 1 : 0);
+  const waveCount = 2 + (n >= 4 ? 1 : 0) + (n >= 30 ? 1 : 0);
   const pool = ENEMIES.filter((e) => e.minLevel <= n);
   const waves: string[][] = [];
   for (let w = 0; w < waveCount; w++) {
-    const count = Math.min(10, 2 + Math.floor(n / 3) + w + (n === 1 ? 0 : 1));
+    const count = Math.min(n < 30 ? 5 : 6, 2 + Math.floor((n - 1) / 8) + (w >= 1 ? 1 : 0));
     const list: string[] = [];
     for (let i = 0; i < count; i++) {
       // Newest unlocked enemy types appear a bit more often.

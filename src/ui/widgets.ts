@@ -78,11 +78,11 @@ export class Button extends Phaser.GameObjects.Container {
       }
     }
     if (o.label !== undefined) {
-      this.label = txt(scene, lx, o.sub ? -12 : -3, o.label, size, o.textColor ?? '#ffffff');
+      this.label = txt(scene, lx, o.sub ? -size * 0.32 - 2 : -3, o.label, size, o.textColor ?? '#ffffff');
       this.add(this.label);
     }
     if (o.sub) {
-      this.sub = txt(scene, lx, 16, o.sub, Math.round(size * 0.6), '#ffffff');
+      this.sub = txt(scene, lx, size * 0.42 + 2, o.sub, Math.max(14, Math.round(size * 0.45)), '#ffffff');
       this.add(this.sub);
     }
     this.setSize(o.w, o.h);

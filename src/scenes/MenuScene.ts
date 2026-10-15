@@ -70,14 +70,14 @@ export class MenuScene extends BaseScene {
     const rx = W * 0.74;
     const lvl = d.level;
     const card = this.add.graphics();
-    card.fillStyle(0x1b1530, 0.6).fillRoundedRect(rx - 190, 150, 380, 150, 24);
-    txt(this, rx, 190, t('levelN', { n: lvl }), 40, '#ffd60a');
-    txt(this, rx, 236, t(`biome_${biomeForLevel(lvl).id}`), 24, '#ffffff');
+    card.fillStyle(0x1b1530, 0.6).fillRoundedRect(rx - 190, 140, 380, 180, 24);
+    txt(this, rx, 178, t('levelN', { n: lvl }), 40, '#ffd60a');
+    txt(this, rx, 218, t(`biome_${biomeForLevel(lvl).id}`), 24, '#ffffff');
     const bossId = BOSS_IDS[(lvl - 1) % BOSS_IDS.length];
-    this.add.image(rx + 140, 262, `boss_${bossId}`).setScale(0.35);
-    txt(this, rx, 270, `${t('boss')}: ${t(`boss_${bossId}`)}`, 20, '#ff8fa3');
+    this.add.image(rx + 150, 280, `boss_${bossId}`).setScale(0.32);
+    txt(this, rx - 10, 252, `${t('boss')}: ${t(`boss_${bossId}`)}`, 20, '#ff8fa3');
     const stars = d.stars[String(lvl)] ?? 0;
-    for (let i = 0; i < 3; i++) this.add.image(rx - 150 + i * 30, 262, i < stars ? 'i_star' : 'i_star_empty').setDisplaySize(28, 28);
+    for (let i = 0; i < 3; i++) this.add.image(rx - 40 + i * 40, 290, i < stars ? 'i_star' : 'i_star_empty').setDisplaySize(34, 34);
     const prev = new Button(this, rx - 230, 225, { w: 56, h: 70, color: 'blue', icon: 'i_arrow', iconSize: 36 }).onClick(() => {
       d.level = Math.max(1, d.level - 1);
       save.save();
