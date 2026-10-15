@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <title>Arena Rush</title>
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #0d1b4c;
+      touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+    #game { position: fixed; inset: 0; }
+    #game canvas { display: block; touch-action: none; outline: none; }
+    #boot-loader { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+      flex-direction: column; color: #fff; font: 900 28px 'Trebuchet MS', Arial, sans-serif;
+      background: radial-gradient(circle at 50% 40%, #2f6bff, #0d1b4c); z-index: 5; }
+    #boot-loader .bar { width: 260px; height: 14px; border-radius: 8px; background: #0008; margin-top: 18px; overflow: hidden; }
+    #boot-loader .fill { height: 100%; width: 0; background: linear-gradient(#ffe066, #ffb703); transition: width .2s; }
+    img { -webkit-user-drag: none; user-drag: none; }
+  </style>
+</head>
+<body>
+  <div id="game"></div>
+  <div id="boot-loader"><div>ARENA RUSH</div><div class="bar"><div class="fill" id="boot-fill"></div></div></div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
