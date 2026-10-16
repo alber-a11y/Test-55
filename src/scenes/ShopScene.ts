@@ -29,6 +29,7 @@ export class ShopScene extends BaseScene {
 
   create(): void {
     this.rebuildOnResize();
+    audio.playMusic('menu');
     const W = this.W;
     background(this, 0x8c4bff, 0x2a0f6b);
     this.coins = new CoinPill(this, W - 110, 46, save.data.coins);

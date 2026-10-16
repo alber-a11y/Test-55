@@ -821,6 +821,7 @@ export class Battle {
     const kind = isSuper ? spec.super.kind : spec.attack.kind;
     const range = (isSuper ? spec.super.range : p.attack.range) * TILE;
     const alpha = 0.35;
+    g.setDepth(2); // area markers lie on the ground, under units
     if (kind === 'quake' || kind === 'stealth') {
       const r = (spec.super.radius ?? 1.5) * TILE;
       g.fillStyle(color, 0.2).fillCircle(p.x, p.y, r);
@@ -834,9 +835,15 @@ export class Battle {
       const ty = p.y + Math.sin(a) * d;
       g.fillStyle(color, alpha * 0.6).fillCircle(tx, ty, r);
       g.lineStyle(3, color, 0.8).strokeCircle(tx, ty, r);
-      g.lineStyle(2, color, 0.3).lineBetween(p.x, p.y, tx, ty);
+      g.lineStyle(2, color, 0.3).lineBetween(p.x + Math.cos(a) * (p.r + 16), p.y - 18 + Math.sin(a) * (p.r + 16), tx, ty);
       return;
     }
+    // Aim starts at the weapon, in front of the hero (projectiles fly at the same height),
+    // and is drawn under the hero when pointing away from the camera.
+    const off = p.r + 16;
+    const mx = p.x + Math.cos(a) * off;
+    const my = p.y - 18 + Math.sin(a) * off;
+    g.setDepth(Math.sin(a) < -0.2 ? p.root.depth - 1 : 1500);
     if (kind === 'slam') {
       const r = (p.attack.radius ?? 1) * TILE;
       g.fillStyle(color, alpha).fillCircle(p.x + Math.cos(a) * range * 0.75, p.y + Math.sin(a) * range * 0.75, r);
@@ -845,11 +852,13 @@ export class Battle {
     const spread = !isSuper ? (p.attack.spread ?? 0) : 0;
     if (spread > 0.2) {
       g.fillStyle(color, alpha * 0.7);
-      g.slice(p.x, p.y, range, a - spread / 2, a + spread / 2, false).fillPath();
+      g.slice(mx, my, Math.max(TILE, range - off), a - spread / 2, a + spread / 2, false).fillPath();
       return;
     }
     const w = isSuper ? 36 : 22;
-    g.lineStyle(w, color, alpha * 0.7).lineBetween(p.x, p.y, p.x + Math.cos(a) * range, p.y + Math.sin(a) * range);
+    const len = Math.max(TILE, range - off);
+    g.lineStyle(w, color, alpha * 0.7).lineBetween(mx, my, mx + Math.cos(a) * len, my + Math.sin(a) * len);
+    g.fillStyle(color, alpha).fillCircle(mx + Math.cos(a) * len, my + Math.sin(a) * len, w / 2);
   }
 
   private updateDash(u: Unit, dt: number): void {

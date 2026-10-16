@@ -43,7 +43,7 @@ export const FX: Record<string, string> = {
 };
 
 export const PICKUPS: Record<string, string> = {
-  coin: svg(36, 36, `<circle cx="18" cy="18" r="15" fill="#ffd60a" ${S}/><circle cx="18" cy="18" r="10" fill="#ffc300" stroke="#e09f00" stroke-width="2"/><path d="M15,11 L15,25 M21,11 L21,25" stroke="#fff3b0" stroke-width="3" stroke-linecap="round"/>`),
+  coin: svg(36, 36, `<circle cx="18" cy="19" r="15" fill="#c98a00" ${S}/><circle cx="18" cy="17" r="15" fill="#ffd60a" ${S}/><circle cx="18" cy="17" r="10.5" fill="#ffc300" stroke="#e09f00" stroke-width="1.5"/><path d="M18,9.5 L20.2,14.4 L25.5,14.9 L21.5,18.4 L22.7,23.6 L18,20.9 L13.3,23.6 L14.5,18.4 L10.5,14.9 L15.8,14.4 Z" fill="#fff3b0" stroke="#e09f00" stroke-width="1"/><ellipse cx="12" cy="10.5" rx="3.5" ry="2" fill="#fff" opacity="0.6"/>`),
   heart: svg(40, 36, `<path d="M20,34 Q2,22 3,11 Q4,2 13,2 Q18,2 20,8 Q22,2 27,2 Q36,2 37,11 Q38,22 20,34 Z" fill="#ef233c" ${S}/><circle cx="12" cy="11" r="3.5" fill="#fff" opacity="0.7"/>`),
   shroom: svg(40, 40, `<rect x="14" y="20" width="12" height="16" rx="4" fill="#fff3e0" ${S}/><path d="M3,22 Q4,4 20,3 Q36,4 37,22 Z" fill="#06d6a0" ${S}/><circle cx="13" cy="13" r="3.5" fill="#fff"/><circle cx="26" cy="10" r="3" fill="#fff"/><circle cx="29" cy="18" r="2.5" fill="#fff"/>`),
 };

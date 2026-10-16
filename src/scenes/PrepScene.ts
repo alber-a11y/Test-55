@@ -18,6 +18,7 @@ export class PrepScene extends BaseScene {
 
   create(): void {
     this.rebuildOnResize();
+    audio.playMusic('menu');
     const W = this.W;
     const level: number = this.sceneData.level ?? save.data.level;
     const cfg = buildLevel(level);

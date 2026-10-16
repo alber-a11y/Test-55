@@ -389,20 +389,38 @@ export class HudScene extends Phaser.Scene {
     platform.gameplayStop();
     const W = this.scale.width;
     const c = this.dim();
-    c.add(panel(this, W / 2 - 220, 140, 440, 440, 0x2b2f55));
-    c.add(txt(this, W / 2, 190, t('pause'), 48, '#ffd60a'));
+    c.add(panel(this, W / 2 - 250, 110, 500, 470, 0x2b2f55));
+    c.add(txt(this, W / 2, 158, t('pause'), 48, '#ffd60a'));
+    c.add(new Button(this, W / 2, 245, { w: 340, h: 76, color: 'green', label: t('resume'), size: 32 }).onClick(() => this.closeOverlay()));
     c.add(
-      new Button(this, W / 2, 330, { w: 320, h: 70, color: 'blue', label: t('settings'), size: 28, icon: 'i_gear', iconSize: 44 }).onClick(() => {
+      new Button(this, W / 2, 335, { w: 340, h: 66, color: 'blue', label: t('settings'), size: 26, icon: 'i_gear', iconSize: 42 }).onClick(() => {
         openSettings(this, () => {}, 300);
       }),
     );
-    c.add(new Button(this, W / 2, 460, { w: 320, h: 76, color: 'green', label: t('resume'), size: 32 }).onClick(() => this.closeOverlay()));
+    // Leave the battle to another screen (progress of this battle is lost).
+    const exits: [string, string, 'purple' | 'blue' | 'orange'][] = [
+      ['levelMapShort', 'Map', 'blue'],
+      ['shop', 'Shop', 'purple'],
+      ['menu', 'Menu', 'orange'],
+    ];
+    exits.forEach(([label, scene, color], i) => {
+      c.add(new Button(this, W / 2 - 150 + i * 150, 430, { w: 140, h: 62, color, label: t(label), size: 20 }).onClick(() => this.leaveBattle(scene)));
+    });
     c.add(
-      new Button(this, W / 2, 540, { w: 220, h: 54, color: 'red', label: t('giveUp'), size: 22 }).onClick(() => {
+      new Button(this, W / 2, 530, { w: 240, h: 56, color: 'red', label: t('giveUp'), size: 22 }).onClick(() => {
         this.closeOverlay();
         this.gs.battle.giveUp();
       }),
     );
+  }
+
+  /** Abandon the battle from the pause menu and open another screen. */
+  private leaveBattle(target: string): void {
+    pauseHub.set('menu', false);
+    ads.inGameplay = false;
+    platform.gameplayStop();
+    this.scene.stop('Game');
+    this.scene.start(target);
   }
 
   private showRevive(canRevive: boolean): void {

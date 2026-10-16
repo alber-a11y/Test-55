@@ -17,6 +17,7 @@ export class HeroesScene extends BaseScene {
 
   create(): void {
     this.rebuildOnResize();
+    audio.playMusic('menu');
     const W = this.W;
     background(this, 0x2f8cff, 0x112a6b);
     this.coins = new CoinPill(this, W - 110, 46, save.data.coins);

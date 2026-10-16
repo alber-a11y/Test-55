@@ -108,7 +108,14 @@ export class ResultScene extends BaseScene {
       await ads.interstitial(d.level);
       target();
     };
-    new Button(this, 150, by + 60, { w: 220, h: 72, color: 'blue', label: t('menu'), size: 28 }).onClick(() => go(() => this.scene.start('Menu')));
+    const exits: [string, string, 'purple' | 'blue' | 'orange'][] = [
+      ['menu', 'Menu', 'orange'],
+      ['levelMapShort', 'Map', 'blue'],
+      ['shop', 'Shop', 'purple'],
+    ];
+    exits.forEach(([label, scene, color], i) =>
+      new Button(this, 100 + i * 160, by + 60, { w: 150, h: 66, color, label: t(label), size: 22 }).onClick(() => go(() => this.scene.start(scene))),
+    );
     if (d.win) {
       new Button(this, W - 170, by + 60, { w: 260, h: 86, color: 'yellow', label: t('next'), size: 36 }).onClick(() =>
         go(() => this.scene.start('Prep', { level: d.level + 1 })),
