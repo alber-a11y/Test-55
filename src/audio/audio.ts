@@ -19,7 +19,16 @@ class AudioEngine {
   soundOn = true;
   musicOn = true;
 
+  /** Registers the context to be created on the first user gesture (browser autoplay policy). */
   init(): void {
+    const start = () => {
+      this.create();
+      this.apply();
+    };
+    for (const ev of ['pointerdown', 'touchend', 'keydown']) window.addEventListener(ev, start, { passive: true });
+  }
+
+  private create(): void {
     if (this.ctx) return;
     const AC = window.AudioContext || (window as any).webkitAudioContext;
     if (!AC) return;
@@ -34,11 +43,10 @@ class AudioEngine {
     this.master.connect(this.ctx.destination);
     for (const [k, layers] of Object.entries(SFX)) this.buffers.set(k, renderLayers(this.ctx, layers));
     this.music = new MusicPlayer(this.ctx, this.musicBus);
-    const unlock = () => {
-      this.apply();
-    };
-    for (const ev of ['pointerdown', 'touchend', 'keydown']) window.addEventListener(ev, unlock, { passive: true });
-    this.apply();
+    if (this.pendingMusic) {
+      const [n, t] = this.pendingMusic;
+      this.music.play(n, t);
+    }
   }
 
   setMuted(reason: string, muted: boolean): void {
@@ -70,11 +78,6 @@ class AudioEngine {
     } else if (this.ctx.state !== 'running') {
       void this.ctx.resume().catch(() => {});
     }
-    if (!silent && this.pendingMusic && this.music) {
-      const [n, t] = this.pendingMusic;
-      this.pendingMusic = null;
-      this.music.play(n, t);
-    }
   }
 
   play(name: string, opts: { vol?: number; rate?: number; throttleMs?: number } = {}): void {
@@ -95,9 +98,8 @@ class AudioEngine {
   }
 
   playMusic(name: string, transpose = 0): void {
-    if (!this.music) return;
-    this.pendingMusic = null;
-    this.music.play(name, transpose);
+    this.pendingMusic = [name, transpose];
+    this.music?.play(name, transpose);
   }
 
   stopMusic(): void {
