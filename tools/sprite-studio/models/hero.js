@@ -153,7 +153,7 @@ function headgear(H, L) {
       // construction hard hat
       const hat = '#ffc300';
       H.add(sphere(1.12, hat, { theta: 1.45, rot: [-0.15, 0, 0], pos: [0, 0.12, 0], scale: [1.06, 0.95, 1.04], rough: 0.35 }));
-      H.add(cyl(1.32, 1.32, 0.09, shade(hat, -0.12), { pos: [0, 0.3, 0.12], rot: [0.12, 0, 0], scale: [1, 1, 1.12], rough: 0.4 }));
+      H.add(cyl(1.1, 1.1, 0.08, shade(hat, -0.12), { pos: [0, 0.34, 0.22], rot: [0.14, 0, 0], scale: [1, 1, 1.08], rough: 0.4 }));
       H.add(rbox(0.3, 0.22, 2.1, 0.09, shade(hat, 0.15), { pos: [0, 1.05, -0.05], rot: [0.12, 0, 0] }));
       H.add(sphere(0.14, '#ef233c', { pos: [0, 0.75, 1.02], emissive: '#ef233c', emissiveIntensity: 0.6 }));
       break;
