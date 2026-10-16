@@ -133,20 +133,16 @@ export class MusicPlayer {
   private noise: AudioBuffer;
   current = '';
 
-  constructor(private ctx: AudioContext, private out: AudioNode) {
+  constructor(private ctx: BaseAudioContext, private out: AudioNode) {
     const len = ctx.sampleRate;
     this.noise = ctx.createBuffer(1, len, ctx.sampleRate);
     const d = this.noise.getChannelData(0);
     for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
   }
 
-  play(name: string, transpose = 0): void {
-    const key = `${name}:${transpose}`;
-    if (this.current === key && this.timer !== null) return;
-    this.stop();
+  private load(name: string, transpose: number): boolean {
     const tr = TRACKS[name];
-    if (!tr) return;
-    this.current = key;
+    if (!tr) return false;
     this.track = tr;
     this.parsed = {
       lead: parseVoice(tr.lead, transpose),
@@ -156,6 +152,15 @@ export class MusicPlayer {
       snare: tr.snare.split(/\s+/),
       hat: tr.hat.split(/\s+/),
     };
+    return true;
+  }
+
+  play(name: string, transpose = 0): void {
+    const key = `${name}:${transpose}`;
+    if (this.current === key && this.timer !== null) return;
+    this.stop();
+    if (!this.load(name, transpose)) return;
+    this.current = key;
     this.step = 0;
     this.nextTime = this.ctx.currentTime + 0.08;
     this.timer = window.setInterval(() => this.tick(), 25);
@@ -175,14 +180,24 @@ export class MusicPlayer {
       return;
     }
     const stepDur = 60 / this.track.bpm / 4;
-    const total = this.parsed.lead.length || this.parsed.kick.length;
+    const total = this.steps();
     if (this.nextTime < this.ctx.currentTime - 0.2) this.nextTime = this.ctx.currentTime + 0.02;
     while (this.nextTime < this.ctx.currentTime + 0.12) {
-      const i = this.step % total;
-      const p = this.parsed;
-      const t = this.nextTime;
+      this.scheduleStep(this.step % total, this.nextTime, stepDur);
+      this.nextTime += stepDur;
+      this.step++;
+    }
+  }
+
+  private steps(): number {
+    return this.parsed!.lead.length || this.parsed!.kick.length;
+  }
+
+  private scheduleStep(i: number, t: number, stepDur: number): void {
+    const p = this.parsed!;
+    {
       const lead = p.lead[i];
-      if (lead) this.tone(t, lead.freqs, lead.len * stepDur, 'square', this.track.leadVol ?? 0.07, 2600);
+      if (lead) this.tone(t, lead.freqs, lead.len * stepDur, 'square', this.track!.leadVol ?? 0.07, 2600);
       const bass = p.bass[i % (p.bass.length || 1)];
       if (bass) this.tone(t, bass.freqs, bass.len * stepDur * 0.9, 'triangle', 0.22, 1200);
       const pad = p.pad[i % (p.pad.length || 1)];
@@ -190,9 +205,25 @@ export class MusicPlayer {
       if (p.kick[i % p.kick.length] === 'x') this.kick(t);
       if (p.snare[i % p.snare.length] === 'x') this.snare(t);
       if (p.hat[i % p.hat.length] === 'x') this.hat(t);
-      this.nextTime += stepDur;
-      this.step++;
     }
+  }
+
+  /**
+   * Schedule `loops` full repetitions of a track starting at t=0 (offline export).
+   * Returns the duration of the scheduled music in seconds.
+   */
+  scheduleLoops(name: string, loops: number): number {
+    if (!this.load(name, 0)) return 0;
+    const stepDur = 60 / this.track!.bpm / 4;
+    const total = this.steps();
+    for (let k = 0; k < loops * total; k++) this.scheduleStep(k % total, k * stepDur, stepDur);
+    return loops * total * stepDur;
+  }
+
+  /** Seconds in one loop of a track. */
+  static loopSeconds(name: string): number {
+    const tr = TRACKS[name];
+    return (tr.lead.trim().split(/\s+/).length * 60) / tr.bpm / 4;
   }
 
   private tone(t: number, freqs: number[], dur: number, type: OscillatorType, vol: number, cutoff: number, attack = 0.005): void {

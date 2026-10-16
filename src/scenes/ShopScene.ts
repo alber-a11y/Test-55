@@ -3,15 +3,14 @@ import { econ } from '../core/economy';
 import { t } from '../core/i18n';
 import { save } from '../core/save';
 import { HEROES } from '../data/heroes';
-import { BOOSTERS, COIN_AD_COOLDOWN_MS, COIN_AD_REWARD, FREE_BOOSTER_COOLDOWN_MS, SKINS, type BoosterId, type SkinDef } from '../data/shop';
+import { COIN_AD_COOLDOWN_MS, COIN_AD_REWARD, SKINS, type SkinDef } from '../data/shop';
 import type { HeroDef } from '../data/types';
 import { ads } from '../platform/AdManager';
 import { background, Button, CoinPill, formatTime, toast, txt, type ColorName } from '../ui/widgets';
 import { BaseScene } from './BaseScene';
 
-type Tab = 'heroes' | 'skins' | 'boosters' | 'free';
-const TABS: Tab[] = ['free', 'heroes', 'skins', 'boosters'];
-const BOOSTER_ICON: Record<BoosterId, string> = { shield: 'i_shield', damage: 'i_damage', speed: 'i_speed', super: 'i_super', life: 'i_life' };
+type Tab = 'heroes' | 'skins' | 'free';
+const TABS: Tab[] = ['free', 'heroes', 'skins'];
 
 interface CardBtn {
   label: string;
@@ -79,7 +78,7 @@ export class ShopScene extends BaseScene {
     // Live cooldown refresh on the free tab.
     if (tab === 'free') {
       const now = Date.now();
-      const cooling = save.data.lastCoinAd + COIN_AD_COOLDOWN_MS > now || save.data.lastFreeBooster + FREE_BOOSTER_COOLDOWN_MS > now;
+      const cooling = save.data.lastCoinAd + COIN_AD_COOLDOWN_MS > now;
       if (cooling) this.time.addEvent({ delay: 1000, loop: true, callback: () => !ads.isBusy && this.scene.restart(this.sceneData) });
     }
   }
@@ -112,18 +111,6 @@ export class ShopScene extends BaseScene {
         return HEROES.filter((h) => h.unlock.type !== 'start').map((h) => (x, y, w, hh) => this.heroItem(h, x, y, w, hh));
       case 'skins':
         return SKINS.filter((s) => s.price.type !== 'free').map((s) => (x, y, w, hh) => this.skinItem(s, x, y, w, hh));
-      case 'boosters':
-        return BOOSTERS.map((b) => (x, y, w, hh) =>
-          this.card(x, y, w, hh, BOOSTER_ICON[b.id], 1, `${t(`booster_${b.id}`)}  x${save.data.boosters[b.id] ?? 0}`, t(`bdesc_${b.id}`), {
-            label: `${b.price}`,
-            color: 'orange',
-            icon: 'i_coin',
-            onClick: () => {
-              if (econ.buyBooster(b.id)) audio.play('buy');
-              else toast(this, t('notEnough'), '#ff8fa3');
-            },
-          }),
-        );
       case 'free':
       default:
         return [
@@ -142,26 +129,6 @@ export class ShopScene extends BaseScene {
                   save.save();
                   audio.play('buy');
                   toast(this, t('coinsGot', { n: COIN_AD_REWARD }), '#ffe066');
-                } else toast(this, t('adNoReward'), '#ff8fa3');
-              },
-            }, 0x4a2a8c);
-          },
-          (x, y, w, hh) => {
-            const left = save.data.lastFreeBooster + FREE_BOOSTER_COOLDOWN_MS - Date.now();
-            this.card(x, y, w, hh, 'i_gift', 1.6, t('freeBooster'), '', {
-              label: left > 0 ? t('cooldown', { t: formatTime(left) }) : t('getFree'),
-              color: 'purple',
-              icon: left > 0 ? undefined : 'i_ad',
-              enabled: left <= 0,
-              onClick: async () => {
-                const ok = await ads.rewarded();
-                if (ok) {
-                  const b = BOOSTERS[Math.floor(Math.random() * BOOSTERS.length)].id;
-                  econ.giveBooster(b);
-                  save.data.lastFreeBooster = Date.now();
-                  save.save();
-                  audio.play('unlock');
-                  toast(this, t('gotBooster', { name: t(`booster_${b}`) }), '#80ed99');
                 } else toast(this, t('adNoReward'), '#ff8fa3');
               },
             }, 0x4a2a8c);

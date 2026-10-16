@@ -8,12 +8,14 @@
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
     "preview": "vite preview",
-    "sprites": "node tools/render-sprites.mjs"
+    "sprites": "node tools/render-sprites.mjs",
+    "audio": "node tools/render-audio.mjs"
   },
   "dependencies": {
     "phaser": "^3.90.0"
   },
   "devDependencies": {
+    "lamejs": "^1.2.1",
     "playwright": "^1.56.1",
     "three": "^0.169.0",
     "typescript": "^5.6.3",

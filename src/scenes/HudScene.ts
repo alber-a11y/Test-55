@@ -1,11 +1,10 @@
 import Phaser from 'phaser';
-import { audio } from '../audio/audio';
 import { t } from '../core/i18n';
 import { pauseHub } from '../core/pause';
-import { save } from '../core/save';
 import { TILE } from '../data/types';
 import { ads } from '../platform/AdManager';
 import { platform } from '../platform/platform';
+import { openSettings } from '../ui/settings';
 import { Button, panel, toast, txt } from '../ui/widgets';
 import type { GameScene } from './GameScene';
 
@@ -65,8 +64,11 @@ export class HudScene extends Phaser.Scene {
     this.supPos = this.touchMode ? { x: W - 300, y: H - 90 } : { x: W - 90, y: H - 90 };
     this.superFill = this.add.graphics();
     const supIcon = this.add.image(0, 0, 'i_super').setDisplaySize(70, 70);
-    this.superBtn = this.add.container(this.supPos.x, this.supPos.y, [this.superFill, supIcon]);
-    if (!this.touchMode) this.superBtn.add(txt(this, 0, 52, 'SPACE / RMB', 13, '#ffffff'));
+    supIcon.y = -8;
+    this.superBtn = this.add.container(this.supPos.x, this.supPos.y, [this.superFill, supIcon, txt(this, 0, 30, t('superBtn'), 17, '#ffd60a')]);
+    if (!this.touchMode) this.superBtn.add(txt(this, 0, 66, t('superHint'), 14, '#ffffff'));
+    // Hand cursor over the super button (clicks are handled in onDown).
+    this.superBtn.setSize(116, 116).setInteractive({ useHandCursor: true });
 
     // Touch controls.
     this.stickBase = this.add.image(0, 0, 'ring').setDisplaySize(STICK_R * 2.2, STICK_R * 2.2).setAlpha(0).setTint(0xffffff);
@@ -162,7 +164,12 @@ export class HudScene extends Phaser.Scene {
       }
       return;
     }
-    // Desktop mouse.
+    // Desktop mouse: clicking the super button casts the super with auto-aim.
+    if (Math.hypot(p.x - this.supPos.x, p.y - this.supPos.y) < 60) {
+      this.gs.inputState.superFire = { angle: null, mag: 1 };
+      return;
+    }
+    if (this.input.hitTestPointer(p).length > 0) return; // other HUD buttons (pause)
     if (p.rightButtonDown()) this.requestSuperFromMouse();
     else if (p.leftButtonDown()) this.mouseLeft = true;
   }
@@ -262,11 +269,17 @@ export class HudScene extends Phaser.Scene {
       if (this.atkId >= 0 || this.supId >= 0) {
         const len = Math.hypot(this.aimVec.x, this.aimVec.y);
         inp.aim = { active: len >= 22, angle: Math.atan2(this.aimVec.y, this.aimVec.x), mag: Math.min(1, len / STICK_R), isSuper: this.supId >= 0 };
-      } else inp.aim.active = false;
+        b.player.tag.faceA = len >= 22 ? inp.aim.angle : undefined;
+      } else {
+        inp.aim.active = false;
+        b.player.tag.faceA = undefined;
+      }
     } else if (b.player.alive) {
       const a = this.mouseAim();
       const superHeld = this.input.activePointer.rightButtonDown();
       inp.aim = { active: true, angle: a.angle, mag: superHeld ? a.superMag : a.mag, isSuper: superHeld };
+      // On desktop the hero always faces the mouse cursor.
+      b.player.tag.faceA = a.angle;
       if (this.mouseLeft && this.input.activePointer.leftButtonDown()) inp.fire = { angle: a.angle, mag: a.mag };
       else this.mouseLeft = false;
     }
@@ -378,24 +391,11 @@ export class HudScene extends Phaser.Scene {
     const c = this.dim();
     c.add(panel(this, W / 2 - 220, 140, 440, 440, 0x2b2f55));
     c.add(txt(this, W / 2, 190, t('pause'), 48, '#ffd60a'));
-    const d = save.data;
-    const toggle = (y: number, label: () => string, fn: () => void) => {
-      const btn = new Button(this, W / 2, y, { w: 320, h: 66, color: 'blue', label: label(), size: 26 }).onClick(() => {
-        fn();
-        btn.setLabel(label());
-      });
-      c.add(btn);
-    };
-    toggle(290, () => `${t('sound')}: ${d.settings.sound ? 'ON' : 'OFF'}`, () => {
-      d.settings.sound = !d.settings.sound;
-      audio.setSettings(d.settings.sound, d.settings.music);
-      save.save();
-    });
-    toggle(370, () => `${t('music')}: ${d.settings.music ? 'ON' : 'OFF'}`, () => {
-      d.settings.music = !d.settings.music;
-      audio.setSettings(d.settings.sound, d.settings.music);
-      save.save();
-    });
+    c.add(
+      new Button(this, W / 2, 330, { w: 320, h: 70, color: 'blue', label: t('settings'), size: 28, icon: 'i_gear', iconSize: 44 }).onClick(() => {
+        openSettings(this, () => {}, 300);
+      }),
+    );
     c.add(new Button(this, W / 2, 460, { w: 320, h: 76, color: 'green', label: t('resume'), size: 32 }).onClick(() => this.closeOverlay()));
     c.add(
       new Button(this, W / 2, 540, { w: 220, h: 54, color: 'red', label: t('giveUp'), size: 22 }).onClick(() => {

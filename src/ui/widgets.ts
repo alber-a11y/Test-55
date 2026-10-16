@@ -209,3 +209,57 @@ export function formatTime(ms: number): string {
   const m = Math.floor(s / 60);
   return `${m}:${String(s % 60).padStart(2, '0')}`;
 }
+
+/** Horizontal 0..1 slider with a draggable knob and percentage readout. */
+export class Slider extends Phaser.GameObjects.Container {
+  private g: Phaser.GameObjects.Graphics;
+  private label: Phaser.GameObjects.Text;
+  private dragging = false;
+
+  constructor(scene: Phaser.Scene, x: number, y: number, private trackW: number, private value: number, private onChange: (v: number, final: boolean) => void) {
+    super(scene, x, y);
+    this.g = scene.add.graphics();
+    this.label = txt(scene, trackW / 2 + 44, 0, '', 22, '#ffffff');
+    const zone = scene.add.zone(0, 0, trackW + 40, 50).setInteractive({ useHandCursor: true });
+    this.add([this.g, this.label, zone]);
+    const setFrom = (p: Phaser.Input.Pointer, final: boolean) => {
+      const m = this.getWorldTransformMatrix();
+      const v = Phaser.Math.Clamp((p.x - m.tx + this.trackW / 2) / this.trackW, 0, 1);
+      this.value = Math.round(v * 20) / 20;
+      this.draw();
+      this.onChange(this.value, final);
+    };
+    zone.on('pointerdown', (p: Phaser.Input.Pointer) => {
+      this.dragging = true;
+      setFrom(p, false);
+    });
+    const move = (p: Phaser.Input.Pointer) => this.dragging && setFrom(p, false);
+    const up = (p: Phaser.Input.Pointer) => {
+      if (!this.dragging) return;
+      this.dragging = false;
+      setFrom(p, true);
+    };
+    scene.input.on('pointermove', move);
+    scene.input.on('pointerup', up);
+    this.once('destroy', () => {
+      scene.input.off('pointermove', move);
+      scene.input.off('pointerup', up);
+    });
+    this.draw();
+    scene.add.existing(this);
+  }
+
+  private draw(): void {
+    const w = this.trackW;
+    const g = this.g;
+    g.clear();
+    g.fillStyle(0x1b1530, 1).fillRoundedRect(-w / 2 - 3, -12, w + 6, 24, 12);
+    g.fillStyle(0x3a3f6b, 1).fillRoundedRect(-w / 2, -9, w, 18, 9);
+    if (this.value > 0) g.fillStyle(0x52d273, 1).fillRoundedRect(-w / 2, -9, Math.max(18, w * this.value), 18, 9);
+    const kx = -w / 2 + w * this.value;
+    g.fillStyle(0x1b1530, 1).fillCircle(kx, 0, 19);
+    g.fillStyle(0xffd60a, 1).fillCircle(kx, 0, 15);
+    g.fillStyle(0xffffff, 0.5).fillCircle(kx - 4, -5, 5);
+    this.label.setText(this.value <= 0 ? 'OFF' : `${Math.round(this.value * 100)}%`);
+  }
+}

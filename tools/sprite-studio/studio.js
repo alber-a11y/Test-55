@@ -138,7 +138,7 @@ export function renderSheet(key, o = {}) {
     row.forEach((c, f) => ctx.drawImage(c, size / 2 - half, top, half * 2, cropH, f * cellW, r * cellH, cellW, cellH)),
   );
   return {
-    url: sheet.toDataURL('image/webp', o.quality ?? 0.78),
+    url: sheet.toDataURL('image/webp', o.quality ?? 0.7),
     cellW,
     cellH,
     anchorY: +anchorY.toFixed(4),

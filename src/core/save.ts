@@ -23,7 +23,7 @@ export interface SaveData {
   /** Rewarded-ad progress for "watch 3 ads" unlocks, by item key. */
   ads: Record<string, number>;
   stars: Record<string, number>;
-  settings: { sound: boolean; music: boolean; lang: Lang | null };
+  settings: { soundVol: number; musicVol: number; lang: Lang | null };
   lastCoinAd: number;
   lastFreeBooster: number;
   stats: { kills: number; bosses: number; played: number };
@@ -47,7 +47,7 @@ function fresh(): SaveData {
     boosters,
     ads: {},
     stars: {},
-    settings: { sound: true, music: true, lang: null },
+    settings: { soundVol: 0.8, musicVol: 0.6, lang: null },
     lastCoinAd: 0,
     lastFreeBooster: 0,
     stats: { kills: 0, bosses: 0, played: 0 },
@@ -62,6 +62,12 @@ function migrate(raw: any): SaveData {
   out.heroes = { ...base.heroes };
   for (const id of Object.keys(base.heroes)) if (raw.heroes?.[id]) out.heroes[id] = { ...base.heroes[id], ...raw.heroes[id] };
   out.boosters = { ...base.boosters, ...(raw.boosters ?? {}) };
+  // v0 settings stored on/off flags instead of volumes.
+  const rs = raw.settings ?? {};
+  if (typeof rs.soundVol !== 'number') out.settings.soundVol = rs.sound === false ? 0 : 0.8;
+  if (typeof rs.musicVol !== 'number') out.settings.musicVol = rs.music === false ? 0 : 0.6;
+  delete (out.settings as any).sound;
+  delete (out.settings as any).music;
   if (!out.heroes[out.selectedHero]?.owned) out.selectedHero = 'rocky';
   out.level = Math.min(Math.max(1, out.level | 0), out.maxLevel);
   return out;

@@ -8,6 +8,7 @@ import { initPlatform, platform } from './platform/platform';
 import { GameScene } from './scenes/GameScene';
 import { HeroesScene } from './scenes/HeroesScene';
 import { HudScene } from './scenes/HudScene';
+import { MapScene } from './scenes/MapScene';
 import { MenuScene } from './scenes/MenuScene';
 import { PreloadScene } from './scenes/PreloadScene';
 import { PrepScene } from './scenes/PrepScene';
@@ -29,7 +30,7 @@ async function boot(): Promise<void> {
   await save.load();
   setLang(save.data.settings.lang ?? platform.getLang());
   audio.init();
-  audio.setSettings(save.data.settings.sound, save.data.settings.music);
+  audio.setVolumes(save.data.settings.soundVol, save.data.settings.musicVol);
   setBootProgress(0.1);
 
   const game = new Phaser.Game({
@@ -43,7 +44,7 @@ async function boot(): Promise<void> {
     input: { activePointers: 4 },
     render: { antialias: true, roundPixels: false, powerPreference: 'high-performance' },
     scale: { mode: Phaser.Scale.FIT, autoCenter: Phaser.Scale.CENTER_BOTH },
-    scene: [PreloadScene, MenuScene, HeroesScene, ShopScene, PrepScene, GameScene, HudScene, ResultScene],
+    scene: [PreloadScene, MenuScene, MapScene, HeroesScene, ShopScene, PrepScene, GameScene, HudScene, ResultScene],
   });
 
   let rt = 0;

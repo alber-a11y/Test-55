@@ -1,8 +1,8 @@
 import { audio } from '../audio/audio';
-import { econ } from '../core/economy';
 import { t } from '../core/i18n';
 import { save } from '../core/save';
 import { BOOSTERS, type BoosterId } from '../data/shop';
+import { ads } from '../platform/AdManager';
 import { buildLevel } from '../gameplay/levels';
 import { background, Button, CoinPill, panel, toast, txt } from '../ui/widgets';
 import { BaseScene } from './BaseScene';
@@ -22,7 +22,7 @@ export class PrepScene extends BaseScene {
     const level: number = this.sceneData.level ?? save.data.level;
     const cfg = buildLevel(level);
     background(this, 0x5b3fd1, 0x1a1050);
-    const coins = new CoinPill(this, W - 110, 46, save.data.coins);
+    new CoinPill(this, W - 110, 46, save.data.coins);
 
     txt(this, W / 2, 56, t('levelN', { n: level }), 52, '#ffd60a');
     txt(this, W / 2, 104, t(`biome_${cfg.biome.id}`), 26, '#ffffff');
@@ -52,42 +52,42 @@ export class PrepScene extends BaseScene {
     const hb = new Button(this, rx - 150, 196, { w: 150, h: 48, color: 'blue', label: t('heroes'), size: 20 }).onClick(() => this.scene.start('Heroes', { back: 'Prep', level }));
     void hb;
 
-    // Boosters.
-    txt(this, W / 2, 482, `${t('boosters')} — ${t('boostersHint')}`, 22, '#ffffff');
+    // Boosters: each one is unlocked for this battle by watching a rewarded ad.
+    txt(this, W / 2, 482, `${t('boosters')} — ${t('watchForBooster')}`, 22, '#ffffff');
     const n = BOOSTERS.length;
-    const bw = 120;
+    const bw = 130;
     const gap = 16;
     const x0 = W / 2 - ((n - 1) * (bw + gap)) / 2;
     BOOSTERS.forEach((b, i) => {
       const x = x0 + i * (bw + gap);
-      const count = () => save.data.boosters[b.id] ?? 0;
-      const btn = new Button(this, x, 560, { w: bw, h: 100, color: 'dark', icon: BOOSTER_ICON[b.id], iconSize: 54 });
+      const btn = new Button(this, x, 560, { w: bw, h: 104, color: 'dark', icon: BOOSTER_ICON[b.id], iconSize: 54 });
       btn.icon!.y = -14;
-      const label = txt(this, 0, 30, '', 18, '#ffffff');
-      btn.add(label);
+      const label = txt(this, 0, 32, '', 17, '#ffffff');
+      const badge = this.add.image(bw / 2 - 16, -38, 'i_ad').setDisplaySize(34, 34);
+      btn.add([label, badge]);
       const refresh = () => {
-        const c = count();
-        btn.setColor(this.chosen.has(b.id) ? 'green' : 'dark');
-        label.setText(c > 0 ? `${t(`booster_${b.id}`)} x${c}` : `${b.price}`);
-        label.setColor(c > 0 ? '#ffffff' : '#ffe066');
+        const on = this.chosen.has(b.id);
+        btn.setColor(on ? 'green' : 'dark');
+        label.setText(on ? t('boosterActive') : t(`booster_${b.id}`));
+        badge.setTexture(on ? 'i_check' : 'i_ad');
       };
-      btn.onClick(() => {
-        if (this.chosen.has(b.id)) this.chosen.delete(b.id);
-        else if (count() > 0) this.chosen.add(b.id);
-        else if (econ.buyBooster(b.id)) {
-          audio.play('buy');
-          coins.set(save.data.coins);
+      btn.onClick(async () => {
+        if (this.chosen.has(b.id) || ads.isBusy) return;
+        btn.setEnabled(false);
+        const ok = await ads.rewarded();
+        btn.setEnabled(true);
+        if (ok) {
           this.chosen.add(b.id);
-        } else toast(this, t('notEnough'), '#ff8fa3');
+          audio.play('unlock');
+        } else toast(this, t('adNoReward'), '#ff8fa3');
         refresh();
       });
       refresh();
     });
 
-    new Button(this, 130, 660, { w: 200, h: 70, color: 'red', label: t('back'), size: 26 }).onClick(() => this.scene.start('Menu'));
+    new Button(this, 130, 660, { w: 200, h: 70, color: 'red', label: t('back'), size: 26 }).onClick(() => this.scene.start('Map'));
     const go = new Button(this, W - 190, 660, { w: 300, h: 90, color: 'yellow', label: t('toBattle'), size: 40 }).onClick(() => {
-      const boosters = [...this.chosen].filter((id) => (save.data.boosters[id] ?? 0) > 0);
-      boosters.forEach((id) => (save.data.boosters[id] -= 1));
+      const boosters = [...this.chosen];
       save.data.stats.played++;
       save.save();
       this.chosen.clear();

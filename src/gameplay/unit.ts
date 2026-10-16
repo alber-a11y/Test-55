@@ -201,6 +201,8 @@ export class Unit {
     if (atkT > 0) {
       this.tag.atkT = atkT - dt;
       this.dirAngle = this.tag.aimA ?? this.dirAngle;
+    } else if (this.tag.faceA !== undefined) {
+      this.dirAngle = this.tag.faceA;
     } else if (dist > 0.4) {
       this.dirAngle = Math.atan2(dy, dx);
     }
