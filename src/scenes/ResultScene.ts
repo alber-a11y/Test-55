@@ -134,9 +134,11 @@ export class ResultScene extends BaseScene {
     const rays = this.add.image(W / 2, H / 2 - 20, 'soft').setDisplaySize(700, 700).setTint(0xffd60a).setAlpha(0.5);
     c.add(rays);
     c.add(txt(this, W / 2, 110, t('newHero'), 56, '#ffd60a'));
-    const img = this.add.image(W / 2, 520, `heroBig_${id}_0`).setOrigin(0.5, 1).setScale(0);
+    const img = this.add.image(W / 2, 520, `heroBig_${id}_0`).setOrigin(0.5, 1);
+    const sc = 320 / img.height;
+    img.setScale(0);
     c.add(img);
-    this.tweens.add({ targets: img, scale: 1.2, duration: 500, ease: 'Back.Out' });
+    this.tweens.add({ targets: img, scale: sc, duration: 500, ease: 'Back.Out' });
     c.add(txt(this, W / 2, 570, t(`hero_${id}`), 44, '#ffffff'));
     c.add(new Button(this, W / 2, 650, { w: 240, h: 70, color: 'green', label: 'OK', size: 32 }).onClick(() => c.destroy()));
   }

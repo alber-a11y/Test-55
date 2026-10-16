@@ -1,0 +1,378 @@
+{
+ "sheets": {
+  "hero_rocky_0": {
+   "cellW": 164,
+   "cellH": 132,
+   "anchorY": 0.8976,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_rocky_1": {
+   "cellW": 158,
+   "cellH": 132,
+   "anchorY": 0.9014,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_rocky_2": {
+   "cellW": 152,
+   "cellH": 132,
+   "anchorY": 0.9053,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_lyra_0": {
+   "cellW": 173,
+   "cellH": 132,
+   "anchorY": 0.8213,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_lyra_1": {
+   "cellW": 173,
+   "cellH": 132,
+   "anchorY": 0.8213,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_lyra_2": {
+   "cellW": 154,
+   "cellH": 132,
+   "anchorY": 0.8411,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_fuse_0": {
+   "cellW": 90,
+   "cellH": 132,
+   "anchorY": 0.9029,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_fuse_1": {
+   "cellW": 90,
+   "cellH": 132,
+   "anchorY": 0.9029,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_fuse_2": {
+   "cellW": 102,
+   "cellH": 132,
+   "anchorY": 0.9029,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_mint_0": {
+   "cellW": 149,
+   "cellH": 132,
+   "anchorY": 0.9015,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_mint_1": {
+   "cellW": 133,
+   "cellH": 132,
+   "anchorY": 0.9122,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_mint_2": {
+   "cellW": 146,
+   "cellH": 132,
+   "anchorY": 0.903,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_volt_0": {
+   "cellW": 144,
+   "cellH": 132,
+   "anchorY": 0.9013,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_volt_1": {
+   "cellW": 138,
+   "cellH": 132,
+   "anchorY": 0.9053,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_volt_2": {
+   "cellW": 144,
+   "cellH": 132,
+   "anchorY": 0.9013,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_fang_0": {
+   "cellW": 127,
+   "cellH": 132,
+   "anchorY": 0.892,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_fang_1": {
+   "cellW": 127,
+   "cellH": 132,
+   "anchorY": 0.8925,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_fang_2": {
+   "cellW": 112,
+   "cellH": 132,
+   "anchorY": 0.905,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_bolt_0": {
+   "cellW": 125,
+   "cellH": 132,
+   "anchorY": 0.8974,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_bolt_1": {
+   "cellW": 125,
+   "cellH": 132,
+   "anchorY": 0.8974,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_bolt_2": {
+   "cellW": 125,
+   "cellH": 132,
+   "anchorY": 0.8974,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_kira_0": {
+   "cellW": 187,
+   "cellH": 132,
+   "anchorY": 0.8885,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_kira_1": {
+   "cellW": 187,
+   "cellH": 132,
+   "anchorY": 0.8885,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_kira_2": {
+   "cellW": 170,
+   "cellH": 132,
+   "anchorY": 0.899,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_grom_0": {
+   "cellW": 152,
+   "cellH": 132,
+   "anchorY": 0.8508,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_grom_1": {
+   "cellW": 152,
+   "cellH": 132,
+   "anchorY": 0.8508,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_grom_2": {
+   "cellW": 150,
+   "cellH": 132,
+   "anchorY": 0.8524,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_shade_0": {
+   "cellW": 125,
+   "cellH": 132,
+   "anchorY": 0.9032,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_shade_1": {
+   "cellW": 125,
+   "cellH": 132,
+   "anchorY": 0.9032,
+   "dirs": 5,
+   "frames": 5
+  },
+  "hero_shade_2": {
+   "cellW": 118,
+   "cellH": 132,
+   "anchorY": 0.9089,
+   "dirs": 5,
+   "frames": 5
+  },
+  "enemy_grunt": {
+   "cellW": 145,
+   "cellH": 124,
+   "anchorY": 0.8762,
+   "dirs": 5,
+   "frames": 5
+  },
+  "enemy_shooter": {
+   "cellW": 155,
+   "cellH": 124,
+   "anchorY": 0.8807,
+   "dirs": 5,
+   "frames": 5
+  },
+  "enemy_bomber": {
+   "cellW": 100,
+   "cellH": 124,
+   "anchorY": 0.8912,
+   "dirs": 5,
+   "frames": 5
+  },
+  "enemy_kamikaze": {
+   "cellW": 106,
+   "cellH": 124,
+   "anchorY": 0.8762,
+   "dirs": 5,
+   "frames": 5
+  },
+  "enemy_sniper": {
+   "cellW": 186,
+   "cellH": 124,
+   "anchorY": 0.8849,
+   "dirs": 5,
+   "frames": 5
+  },
+  "enemy_medic": {
+   "cellW": 140,
+   "cellH": 124,
+   "anchorY": 0.8762,
+   "dirs": 5,
+   "frames": 5
+  },
+  "enemy_brute": {
+   "cellW": 150,
+   "cellH": 124,
+   "anchorY": 0.8807,
+   "dirs": 5,
+   "frames": 5
+  },
+  "enemy_summoner": {
+   "cellW": 178,
+   "cellH": 124,
+   "anchorY": 0.8535,
+   "dirs": 5,
+   "frames": 5
+  },
+  "enemy_mini": {
+   "cellW": 132,
+   "cellH": 124,
+   "anchorY": 0.8242,
+   "dirs": 5,
+   "frames": 5
+  },
+  "enemy_drone": {
+   "cellW": 170,
+   "cellH": 124,
+   "anchorY": 1.2181,
+   "dirs": 5,
+   "frames": 5
+  },
+  "enemy_slimelet": {
+   "cellW": 132,
+   "cellH": 124,
+   "anchorY": 0.8242,
+   "dirs": 5,
+   "frames": 5
+  },
+  "boss_golem": {
+   "cellW": 212,
+   "cellH": 240,
+   "anchorY": 0.9062,
+   "dirs": 5,
+   "frames": 5
+  },
+  "boss_wasp": {
+   "cellW": 205,
+   "cellH": 240,
+   "anchorY": 0.9694,
+   "dirs": 5,
+   "frames": 5
+  },
+  "boss_mech": {
+   "cellW": 279,
+   "cellH": 240,
+   "anchorY": 0.8596,
+   "dirs": 5,
+   "frames": 5
+  },
+  "boss_pyro": {
+   "cellW": 285,
+   "cellH": 240,
+   "anchorY": 0.861,
+   "dirs": 5,
+   "frames": 5
+  },
+  "boss_phantom": {
+   "cellW": 199,
+   "cellH": 240,
+   "anchorY": 0.9164,
+   "dirs": 5,
+   "frames": 5
+  },
+  "boss_slime": {
+   "cellW": 225,
+   "cellH": 240,
+   "anchorY": 0.8092,
+   "dirs": 5,
+   "frames": 5
+  },
+  "turret": {
+   "cellW": 102,
+   "cellH": 110,
+   "anchorY": 0.8257,
+   "dirs": 5,
+   "frames": 1
+  }
+ },
+ "portraits": [
+  "heroBig_rocky_0",
+  "heroBig_rocky_1",
+  "heroBig_rocky_2",
+  "heroBig_lyra_0",
+  "heroBig_lyra_1",
+  "heroBig_lyra_2",
+  "heroBig_fuse_0",
+  "heroBig_fuse_1",
+  "heroBig_fuse_2",
+  "heroBig_mint_0",
+  "heroBig_mint_1",
+  "heroBig_mint_2",
+  "heroBig_volt_0",
+  "heroBig_volt_1",
+  "heroBig_volt_2",
+  "heroBig_fang_0",
+  "heroBig_fang_1",
+  "heroBig_fang_2",
+  "heroBig_bolt_0",
+  "heroBig_bolt_1",
+  "heroBig_bolt_2",
+  "heroBig_kira_0",
+  "heroBig_kira_1",
+  "heroBig_kira_2",
+  "heroBig_grom_0",
+  "heroBig_grom_1",
+  "heroBig_grom_2",
+  "heroBig_shade_0",
+  "heroBig_shade_1",
+  "heroBig_shade_2",
+  "bossBig_golem",
+  "bossBig_wasp",
+  "bossBig_mech",
+  "bossBig_pyro",
+  "bossBig_phantom",
+  "bossBig_slime"
+ ]
+}

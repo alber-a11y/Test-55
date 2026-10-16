@@ -197,6 +197,7 @@ export class Battle {
       attack,
       texture: `hero_${this.setup.skinId}`,
       scale: 0.62,
+      displayH: 118,
       label: t(`hero_${h.id}`),
       dmgMult: mult,
     });
@@ -562,6 +563,7 @@ export class Battle {
       attack,
       texture: `enemy_${id}`,
       scale: (d.radius / 24) * 0.62,
+      displayH: d.radius * 4.4,
       dmgMult: df.dmg,
     });
     u.defId = id;
@@ -629,6 +631,7 @@ export class Battle {
         attack: { kind: 'shot', dmg: 0, range: 0, reload: 1, sfx: '', charge: 0 },
         texture: `boss_${bd.id}`,
         scale: 0.75,
+        displayH: bd.radius * 4.3,
         dmgMult: df.dmg * (1 + tier * 0.12),
       });
       u.defId = bd.id;

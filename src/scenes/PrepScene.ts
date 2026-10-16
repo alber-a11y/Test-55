@@ -31,7 +31,8 @@ export class PrepScene extends BaseScene {
     const lx = W * 0.25;
     panel(this, lx - 190, 150, 380, 300, 0x3a1f6b);
     txt(this, lx, 180, `${t('boss')}`, 26, '#ff8fa3');
-    const bimg = this.add.image(lx, 310, `bossBig_${cfg.boss}`).setScale(0.75);
+    const bimg = this.add.image(lx, 310, `bossBig_${cfg.boss}`);
+    bimg.setScale(Math.min(210 / bimg.height, 330 / bimg.width));
     this.tweens.add({ targets: bimg, y: 300, yoyo: true, repeat: -1, duration: 1000, ease: 'Sine.InOut' });
     txt(this, lx, 425, t(`boss_${cfg.boss}`) + (cfg.bossTier > 0 ? ` ${'★'.repeat(Math.min(5, cfg.bossTier))}` : ''), 26, '#ffffff');
 
@@ -39,7 +40,8 @@ export class PrepScene extends BaseScene {
     const rx = W * 0.72;
     panel(this, rx - 230, 150, 460, 300, 0x23306b);
     const hs = save.data.heroes[save.data.selectedHero];
-    this.add.image(rx - 150, 330, `heroBig_${hs.skin}`).setScale(0.62);
+    const hp = this.add.image(rx - 150, 330, `heroBig_${hs.skin}`);
+    hp.setScale(Math.min(180 / hp.height, 160 / hp.width));
     txt(this, rx - 150, 425, `${t(`hero_${save.data.selectedHero}`)} ${t('level_short', { n: hs.level })}`, 22, '#ffffff');
     txt(this, rx + 70, 180, t('modifiers'), 24, '#ffd166');
     if (cfg.mods.length === 0) txt(this, rx + 70, 240, t('noModifiers'), 20, '#bde0fe', { wordWrap: { width: 230 } });

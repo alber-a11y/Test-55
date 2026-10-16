@@ -49,7 +49,8 @@ export class HeroesScene extends BaseScene {
     g.fillStyle(0x1b1530, 1).fillRoundedRect(x - w / 2 - 3, y - hgt / 2 - 3, w + 6, hgt + 6, 16);
     g.fillStyle(col, 1).fillRoundedRect(x - w / 2, y - hgt / 2, w, hgt, 14);
     if (active) g.lineStyle(5, 0xffd60a, 1).strokeRoundedRect(x - w / 2 - 2, y - hgt / 2 - 2, w + 4, hgt + 4, 16);
-    const img = this.add.image(x, y + 30, `hero_${st.skin}`).setOrigin(0.5, 1).setScale(Math.min(1, (w - 10) / 124));
+    const img = this.add.image(x, y + 34, `heroBig_${st.skin}`).setOrigin(0.5, 1);
+    img.setScale(Math.min(132 / img.height, (w - 12) / img.width));
     if (!st.owned) img.setTint(0x30304a);
     txt(this, x, y + 54, t(`hero_${h.id}`), 20, '#ffffff');
     if (st.owned) txt(this, x, y + 80, t('level_short', { n: st.level }), 16, '#ffe066');
@@ -76,7 +77,8 @@ export class HeroesScene extends BaseScene {
     const st = save.data.heroes[h.id];
     panel(this, x0, 96, pw, 540, 0x23306b);
     const skinId: string = this.sceneData.skin;
-    const portrait = this.add.image(x0 + 130, 360, `heroBig_${skinId}`).setOrigin(0.5, 1).setScale(0.82);
+    const portrait = this.add.image(x0 + 130, 360, `heroBig_${skinId}`).setOrigin(0.5, 1);
+    portrait.setScale(Math.min(220 / portrait.height, 230 / portrait.width));
     this.tweens.add({ targets: portrait, y: 354, yoyo: true, repeat: -1, duration: 900, ease: 'Sine.InOut' });
     txt(this, x0 + 130, 126, t(`hero_${h.id}`).toUpperCase(), 32, '#ffffff');
     txt(this, x0 + 130, 158, t(`role_${h.role}`), 20, '#bde0fe');
@@ -111,7 +113,8 @@ export class HeroesScene extends BaseScene {
       const g = this.add.graphics();
       g.fillStyle(owned ? 0x3a5bd9 : 0x1b1e3c, 1).fillRoundedRect(sx - 34, sy - 40, 68, 80, 10);
       if (s.id === skinId) g.lineStyle(4, 0xffd60a, 1).strokeRoundedRect(sx - 36, sy - 42, 72, 84, 12);
-      this.add.image(sx, sy + 34, `hero_${s.id}`).setOrigin(0.5, 1).setScale(0.55);
+      const th = this.add.image(sx, sy + 36, `heroBig_${s.id}`).setOrigin(0.5, 1);
+      th.setScale(Math.min(74 / th.height, 64 / th.width));
       if (s.id === st.skin) this.add.image(sx + 24, sy - 30, 'i_check').setDisplaySize(26, 26);
       else if (!owned) this.add.image(sx + 24, sy - 30, s.price.type === 'ads' ? 'i_ad' : 'i_coin').setDisplaySize(26, 26);
       this.add

@@ -60,8 +60,9 @@ export class MenuScene extends BaseScene {
     const g = this.add.graphics();
     g.fillStyle(0x000000, 0.25).fillEllipse(cx, 610, 300, 70);
     g.fillStyle(0xffffff, 0.15).fillEllipse(cx, 600, 260, 56);
-    const portrait = this.add.image(cx, 612, `heroBig_${hs.skin}`).setOrigin(0.5, 1).setScale(1.25);
-    this.tweens.add({ targets: portrait, scaleY: 1.28, y: 608, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
+    const portrait = this.add.image(cx, 612, `heroBig_${hs.skin}`).setOrigin(0.5, 1);
+    portrait.setScale(360 / portrait.height);
+    this.tweens.add({ targets: portrait, scaleY: portrait.scaleY * 1.025, y: 608, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
     portrait.setInteractive({ useHandCursor: true }).on('pointerup', () => this.scene.start('Heroes'));
     txt(this, cx, 210, t(`hero_${heroId}`).toUpperCase(), 44, '#ffffff');
     txt(this, cx, 256, `${t(`role_${HEROES.find((h) => h.id === heroId)!.role}`)} · ${t('level_short', { n: hs.level })}`, 24, '#bde0fe');
@@ -74,7 +75,8 @@ export class MenuScene extends BaseScene {
     txt(this, rx, 178, t('levelN', { n: lvl }), 40, '#ffd60a');
     txt(this, rx, 218, t(`biome_${biomeForLevel(lvl).id}`), 24, '#ffffff');
     const bossId = BOSS_IDS[(lvl - 1) % BOSS_IDS.length];
-    this.add.image(rx + 150, 280, `boss_${bossId}`).setScale(0.32);
+    const bi = this.add.image(rx + 150, 280, `bossBig_${bossId}`);
+    bi.setScale(62 / bi.height);
     txt(this, rx - 10, 252, `${t('boss')}: ${t(`boss_${bossId}`)}`, 20, '#ff8fa3');
     const stars = d.stars[String(lvl)] ?? 0;
     for (let i = 0; i < 3; i++) this.add.image(rx - 40 + i * 40, 290, i < stars ? 'i_star' : 'i_star_empty').setDisplaySize(34, 34);

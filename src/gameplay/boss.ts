@@ -84,7 +84,9 @@ export class BossBrain {
         }
       }
       this.last = pick.name;
+      this.u.tag.aimA = this.angToPlayer();
       this.busy = pick.run();
+      this.u.tag.atkT = Math.min(0.9, Math.max(0.4, this.busy * 0.6));
       this.cd = (1.3 + Math.random() * 0.8) * (this.phase2 ? 0.7 : 1);
     }
   }
@@ -361,7 +363,7 @@ export class BossBrain {
                 const c = new Unit(b, {
                   kind: 'clone', team: 1, x: pos.x, y: pos.y, r: 30, hp: Math.round(this.u.maxHp * 0.08), speed: 160,
                   attack: { kind: 'shot', dmg: 300, range: 7, speed: 650, reload: 1.6, sfx: 'shoot', proj: 'b_shadow', charge: 0 },
-                  texture: 'boss_phantom', scale: 0.4, dmgMult: this.u.dmgMult,
+                  texture: 'boss_phantom', scale: 0.4, displayH: 110, dmgMult: this.u.dmgMult,
                 });
                 c.defId = 'shooter';
                 c.kind = 'enemy';

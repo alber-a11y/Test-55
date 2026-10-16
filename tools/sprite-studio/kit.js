@@ -34,6 +34,7 @@ export function mat(color, o = {}) {
         emissive: new THREE.Color(o.emissive ?? '#000000'),
         emissiveIntensity: o.emissiveIntensity ?? 1,
         flatShading: !!o.flat,
+        side: o.side === 'double' ? THREE.DoubleSide : THREE.FrontSide,
       }),
     );
   }
@@ -58,7 +59,8 @@ export function mesh(geo, material, o = {}) {
   return place(m, o);
 }
 
-export const sphere = (r, color, o = {}) => mesh(new THREE.SphereGeometry(r, 40, 28, 0, Math.PI * 2, o.thetaStart ?? 0, o.theta ?? Math.PI), mat(color, o), o);
+export const sphere = (r, color, o = {}) =>
+  mesh(new THREE.SphereGeometry(r, 40, 28, o.phiStart ?? 0, o.phi ?? Math.PI * 2, o.thetaStart ?? 0, o.theta ?? Math.PI), mat(color, { ...o, side: o.phi || o.theta ? 'double' : undefined }), o);
 export const capsule = (r, len, color, o = {}) => mesh(new THREE.CapsuleGeometry(r, len, 12, 28), mat(color, o), o);
 export const rbox = (w, h, d, rad, color, o = {}) => mesh(new RoundedBoxGeometry(w, h, d, 5, rad), mat(color, o), o);
 export const cyl = (rt, rb, h, color, o = {}) => mesh(new THREE.CylinderGeometry(rt, rb, h, 32, 1, !!o.open), mat(color, o), o);

@@ -14,6 +14,9 @@ function dmgOf(u: Unit, base: number): number {
 
 /** Fire a basic attack in direction `angle`; `mag` (0..1) is aim distance for lobbed attacks. */
 export function fireAttack(b: Battle, u: Unit, spec: AttackSpec, angle: number, mag: number): void {
+  // Turn the model toward the shot and show the attack frame.
+  u.tag.aimA = angle;
+  u.tag.atkT = 0.3;
   const dmg = dmgOf(u, spec.dmg);
   const range = spec.range * TILE;
   const ox = u.x + Math.cos(angle) * u.r * 0.8;
@@ -180,6 +183,7 @@ function spawnTurret(b: Battle, owner: Unit, x: number, y: number, dmg: number, 
     attack: { kind: 'shot', dmg, range: 7, speed: 1100, reload: 0.5, sfx: 'shoot', proj: 'p_nail', charge: 0.02 },
     texture: 'turret',
     scale: 0.8,
+    displayH: 92,
   });
   t.maxAmmo = 3;
   t.lifeT = life;
@@ -189,6 +193,8 @@ function spawnTurret(b: Battle, owner: Unit, x: number, y: number, dmg: number, 
 }
 
 export function castSuper(b: Battle, u: Unit, sup: SuperSpec, angle: number, mag: number): void {
+  u.tag.aimA = angle;
+  u.tag.atkT = 0.45;
   const dmg = dmgOf(u, sup.dmg);
   const range = sup.range * TILE;
   audio.play('super', { vol: 0.6 });

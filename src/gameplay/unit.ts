@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { SPRITES, type SheetMeta } from '../art/sprites';
 import type { AttackSpec } from '../data/types';
 import type { Battle } from './battle';
 
@@ -18,6 +19,8 @@ export interface UnitOpts {
   scale: number;
   label?: string;
   dmgMult?: number;
+  /** On-screen height for pre-rendered 3D sheets (px). */
+  displayH?: number;
 }
 
 let NEXT_ID = 1;
@@ -72,6 +75,13 @@ export class Unit {
   private flashT = 0;
   private lastBarKey = '';
   private baseScale: number;
+  /** Pre-rendered direction × frame sheet, if this unit's texture has one. */
+  private sheet: SheetMeta | null = null;
+  private walkPhase = 0;
+  private lastX = 0;
+  private lastY = 0;
+  private dirAngle = Math.PI / 2;
+  private barY = 0;
 
   constructor(private battle: Battle, o: UnitOpts) {
     this.kind = o.kind;
@@ -86,8 +96,20 @@ export class Unit {
     this.baseScale = o.scale;
     const s = battle.scene;
     this.shadow = s.add.image(0, 0, 'shadow').setDisplaySize(this.r * 2.4, this.r * 0.9);
+    this.sheet = SPRITES[o.texture] ?? null;
     this.sprite = s.add.image(0, 0, o.texture).setOrigin(0.5, 0.92).setScale(o.scale);
     this.sprite.y = this.r * 0.35;
+    if (this.sheet) {
+      const dh = o.displayH ?? this.r * 4.3;
+      o.scale = dh / this.sheet.cellH;
+      this.baseScale = o.scale;
+      this.sprite.setOrigin(0.5, this.sheet.anchorY).setFrame(this.frameIndex(0, 3)).setScale(o.scale);
+      this.barY = this.sprite.y - this.sheet.anchorY * dh * 0.93 - 4;
+    } else {
+      this.barY = -this.r * 2.2 - 14;
+    }
+    this.lastX = this.x;
+    this.lastY = this.y;
     this.bar = s.add.graphics();
     this.root = s.add.container(this.x, this.y, [this.shadow, this.sprite, this.bar]);
     this.shadow.y = this.r * 0.35;
@@ -165,14 +187,57 @@ export class Unit {
     this.inBush = this.battle.arena.isBushPx(this.x, this.y);
   }
 
+  private frameIndex(dir: number, frame: number): number {
+    return dir * (this.sheet?.frames ?? 1) + frame;
+  }
+
+  /** Pick direction row + animation frame from movement / aim. */
+  private animateSheet(dt: number): void {
+    const sh = this.sheet!;
+    const dx = this.x - this.lastX;
+    const dy = this.y - this.lastY;
+    const dist = Math.hypot(dx, dy);
+    const atkT = (this.tag.atkT ?? 0) as number;
+    if (atkT > 0) {
+      this.tag.atkT = atkT - dt;
+      this.dirAngle = this.tag.aimA ?? this.dirAngle;
+    } else if (dist > 0.4) {
+      this.dirAngle = Math.atan2(dy, dx);
+    }
+    // Mirror the west half onto rendered east-side directions.
+    const flip = Math.cos(this.dirAngle) < -0.01;
+    const a = flip ? Math.PI - this.dirAngle : this.dirAngle;
+    const theta = Phaser.Math.Angle.Wrap(Math.PI / 2 - a);
+    const dir = Phaser.Math.Clamp(Math.round(Math.abs(theta) / (Math.PI / 4)), 0, sh.dirs - 1);
+    let frame = 3; // idle (feet together)
+    if (sh.frames >= 5) {
+      if (atkT > 0) frame = 4;
+      else if (dist > 0.4) {
+        this.walkPhase = (this.walkPhase + dist / 70) % 1;
+        frame = Math.floor(this.walkPhase * 4) % 4;
+      }
+    } else frame = 0;
+    this.sprite.setFrame(this.frameIndex(dir, Math.min(frame, sh.frames - 1)));
+    this.sprite.setFlipX(flip);
+    this.facing = flip ? -1 : 1;
+  }
+
   syncVisual(dt: number, viewerTeam: Team, viewer: Unit | null): void {
     const r = this.root;
     r.setPosition(this.x, this.y);
     r.setDepth(this.y + this.r * 0.4);
+    if (this.sheet) {
+      this.animateSheet(dt);
+      this.lastX = this.x;
+      this.lastY = this.y;
+    }
     this.bob += dt * (this.moving ? 14 : 3);
     const k = this.moving ? 1 : 0.35;
     const sc = this.baseScale;
-    if (this.sprite.scaleY > 0 && !this.battle.scene.tweens.isTweening(this.sprite)) {
+    if (this.sheet) {
+      // Frames carry the animation; keep only a subtle idle breath.
+      if (!this.battle.scene.tweens.isTweening(this.sprite)) this.sprite.setScale(sc, sc * (1 + (this.moving ? 0 : Math.sin(this.bob * 2) * 0.012)));
+    } else if (this.sprite.scaleY > 0 && !this.battle.scene.tweens.isTweening(this.sprite)) {
       this.sprite.setScale(sc * (1 + Math.sin(this.bob * 2) * 0.03 * k) * this.facing, sc * (1 - Math.sin(this.bob * 2) * 0.03 * k));
       this.sprite.rotation = this.moving ? Math.sin(this.bob) * 0.08 : 0;
     } else if (this.sprite.scaleY > 0) {
@@ -200,7 +265,7 @@ export class Unit {
     }
     r.setAlpha(alpha);
     this.drawBar();
-    if (this.label) this.label.y = -this.r * 2.2 - 20;
+    if (this.label) this.label.y = this.barY - 6;
   }
 
   private drawBar(): void {
@@ -215,7 +280,7 @@ export class Unit {
     g.clear();
     const w = this.kind === 'hero' ? 74 : 58;
     const h = this.kind === 'hero' ? 11 : 8;
-    const y = -this.r * 2.2 - 14;
+    const y = this.barY;
     g.fillStyle(0x1b1530, 0.9).fillRoundedRect(-w / 2 - 2, y - 2, w + 4, h + 4, 4);
     const col = this.team === 0 ? (this.kind === 'turret' ? 0x4cc9f0 : 0x3ddc4a) : 0xff3b4e;
     g.fillStyle(col, 1).fillRoundedRect(-w / 2, y, Math.max(2, w * pct), h, 3);

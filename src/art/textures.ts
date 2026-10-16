@@ -1,4 +1,5 @@
 import Phaser from 'phaser';
+import { loadSprites } from './sprites';
 import { BIOMES } from '../data/biomes';
 import { ENEMIES } from '../data/enemies';
 import { heroById } from '../data/heroes';
@@ -82,48 +83,11 @@ function jobs(): Job[] {
   return list;
 }
 
-/**
- * Pre-rendered 3D sprites (tools/sprite-studio). Each PNG replaces the SVG textures
- * listed for it, resampled to the same heights the SVG versions use.
- */
-const RENDERED: Record<string, { key: string; h: number }[]> = {
-  hero_rocky_0: [
-    { key: 'hero_rocky_0', h: 130 },
-    { key: 'heroBig_rocky_0', h: 286 },
-  ],
-};
-
-function loadImage(url: string): Promise<HTMLImageElement | null> {
-  return new Promise((resolve) => {
-    const img = new Image();
-    img.onload = () => resolve(img);
-    img.onerror = () => resolve(null);
-    img.src = url;
-  });
-}
-
-async function loadRendered(scene: Phaser.Scene): Promise<void> {
-  await Promise.all(
-    Object.entries(RENDERED).map(async ([file, outs]) => {
-      const img = await loadImage(`sprites/${file}.png`);
-      if (!img) return;
-      for (const o of outs) {
-        const c = document.createElement('canvas');
-        c.height = o.h;
-        c.width = Math.round((img.width * o.h) / img.height);
-        const ctx = c.getContext('2d')!;
-        ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(img, 0, 0, c.width, c.height);
-        if (scene.textures.exists(o.key)) scene.textures.remove(o.key);
-        scene.textures.addCanvas(o.key, c);
-      }
-    }),
-  );
-}
-
 /** Rasterize every SVG asset into Phaser canvas textures. */
 export async function buildTextures(scene: Phaser.Scene, onProgress: (p: number) => void): Promise<void> {
-  const all = jobs();
+  // 3D-rendered sheets first; SVG art is only generated for textures they do not cover.
+  const covered = await loadSprites(scene, (p) => onProgress(p * 0.6));
+  const all = jobs().filter((j) => !covered.has(j.key));
   let done = 0;
   const BATCH = 12;
   for (let i = 0; i < all.length; i += BATCH) {
@@ -139,7 +103,6 @@ export async function buildTextures(scene: Phaser.Scene, onProgress: (p: number)
       scene.textures.addCanvas(j.key, c);
     });
     done += chunk.length;
-    onProgress(done / all.length);
+    onProgress(0.6 + (0.4 * done) / all.length);
   }
-  await loadRendered(scene);
 }

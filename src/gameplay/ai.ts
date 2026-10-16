@@ -210,6 +210,8 @@ export function updateBrain(b: Battle, u: Unit, dt: number): void {
   if (def.ai === 'sniper') {
     const ang = aimAt(b, u, tgt, spec.speed ?? 1200);
     st.aiming = 0.65;
+    u.tag.aimA = ang;
+    u.tag.atkT = 0.65;
     b.teleLine(u.x, u.y, ang, range, 10, 0.65, 0xff006e, () => {
       st.aiming = 0;
       if (!u.alive) return;
