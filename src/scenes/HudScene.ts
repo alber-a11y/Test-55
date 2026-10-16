@@ -398,14 +398,7 @@ export class HudScene extends Phaser.Scene {
       }),
     );
     // Leave the battle to another screen (progress of this battle is lost).
-    const exits: [string, string, 'purple' | 'blue' | 'orange'][] = [
-      ['levelMapShort', 'Map', 'blue'],
-      ['shop', 'Shop', 'purple'],
-      ['menu', 'Menu', 'orange'],
-    ];
-    exits.forEach(([label, scene, color], i) => {
-      c.add(new Button(this, W / 2 - 150 + i * 150, 430, { w: 140, h: 62, color, label: t(label), size: 20 }).onClick(() => this.leaveBattle(scene)));
-    });
+    this.addExitRow(c, 430);
     c.add(
       new Button(this, W / 2, 530, { w: 240, h: 56, color: 'red', label: t('giveUp'), size: 22 }).onClick(() => {
         this.closeOverlay();
@@ -417,6 +410,7 @@ export class HudScene extends Phaser.Scene {
   /** Abandon the battle from the pause menu and open another screen. */
   private leaveBattle(target: string): void {
     pauseHub.set('menu', false);
+    pauseHub.set('dialog', false);
     ads.inGameplay = false;
     platform.gameplayStop();
     this.scene.stop('Game');
@@ -429,11 +423,11 @@ export class HudScene extends Phaser.Scene {
     pauseHub.set('dialog', true);
     const W = this.scale.width;
     const c = this.dim();
-    c.add(panel(this, W / 2 - 240, 170, 480, 360, 0x4a1f3d));
-    c.add(this.add.image(W / 2, 250, 'i_skull').setDisplaySize(90, 90));
-    c.add(txt(this, W / 2, 330, t('revivePrompt'), 34, '#ffffff'));
+    c.add(panel(this, W / 2 - 250, 96, 500, 560, 0x4a1f3d));
+    c.add(this.add.image(W / 2, 160, 'i_skull').setDisplaySize(80, 80));
+    c.add(txt(this, W / 2, 230, t('revivePrompt'), 34, '#ffffff'));
     if (canRevive) {
-      const rb = new Button(this, W / 2, 410, { w: 340, h: 84, color: 'purple', label: t('revive'), size: 32, icon: 'i_ad', iconSize: 50 }).onClick(async () => {
+      const rb = new Button(this, W / 2, 310, { w: 340, h: 84, color: 'purple', label: t('revive'), size: 32, icon: 'i_ad', iconSize: 50 }).onClick(async () => {
         rb.setEnabled(false);
         const ok = await ads.rewarded();
         if (ok) {
@@ -448,12 +442,32 @@ export class HudScene extends Phaser.Scene {
       this.tweens.add({ targets: rb, scale: 1.05, yoyo: true, repeat: -1, duration: 500 });
     }
     c.add(
-      new Button(this, W / 2, canRevive ? 490 : 430, { w: 240, h: 60, color: 'red', label: t('giveUp'), size: 24 }).onClick(() => {
+      new Button(this, W / 2, canRevive ? 395 : 330, { w: 240, h: 58, color: 'red', label: t('giveUp'), size: 24 }).onClick(() => {
         this.closeDialog();
         this.gs.battle.giveUp();
       }),
     );
+    this.addExitRow(c, 485);
+    c.add(
+      new Button(this, W / 2, 575, { w: 300, h: 62, color: 'blue', label: t('settings'), size: 24, icon: 'i_gear', iconSize: 40 }).onClick(() => {
+        openSettings(this, () => {}, 300);
+      }),
+    );
   }
+
+  /** Map / Shop / Menu buttons that abandon the battle. */
+  private addExitRow(c: Phaser.GameObjects.Container, y: number): void {
+    const W = this.scale.width;
+    const exits: [string, string, 'purple' | 'blue' | 'orange'][] = [
+      ['levelMapShort', 'Map', 'blue'],
+      ['shop', 'Shop', 'purple'],
+      ['menu', 'Menu', 'orange'],
+    ];
+    exits.forEach(([label, scene, color], i) => {
+      c.add(new Button(this, W / 2 - 150 + i * 150, y, { w: 140, h: 62, color, label: t(label), size: 20 }).onClick(() => this.leaveBattle(scene)));
+    });
+  }
+
 
   private closeDialog(): void {
     pauseHub.set('dialog', false);
