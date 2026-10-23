@@ -11,17 +11,18 @@ export class CardTextures {
 
   constructor(private textures: Phaser.Textures.TextureManager, private ranks: number[] = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]) {}
 
-  /** (Re)generate faces of style `faceId` — keys "face_<id>_<suit>_<rank>". */
-  useFace(id: string): void {
-    if (this.faceId === id) return;
-    this.faceId = id;
+  /** (Re)generate faces of style `id` — keys "face_<id><variant>_<suit>_<rank>". */
+  useFace(id: string, variant = ''): void {
+    const kid = id + variant;
+    if (this.faceId === kid) return;
+    this.faceId = kid;
     const st = faceStyle(id);
     for (let s = 0; s < 4; s++)
       for (const r of this.ranks) {
-        const key = faceKey(id, s as Suit, r);
+        const key = faceKey(kid, s as Suit, r);
         if (!this.textures.exists(key)) this.textures.addCanvas(key, renderFace(st, s as Suit, r));
       }
-    const wk = `wild_${id}`;
+    const wk = `wild_${kid}`;
     if (!this.textures.exists(wk)) this.textures.addCanvas(wk, renderWild(st));
   }
 

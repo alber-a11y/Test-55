@@ -1,4 +1,10 @@
 import { RANK_LABELS, type Suit } from './card';
+
+/** Rank labels drawn on faces (games may switch to Russian letters В/Д/К/Т). */
+let LABELS: readonly string[] = RANK_LABELS;
+export function setRankLabels(labels: readonly string[]): void {
+  LABELS = labels;
+}
 import { darken, fillSuit, lighten, makeCanvas, mix, roundRect, starPath, suitPath, type Ctx } from './draw';
 
 /** Card texture resolution (displayed scaled down). Aspect 1 : 1.4. */
@@ -171,7 +177,7 @@ export function drawCardBase(ctx: Ctx, w: number, h: number, st: FaceStyle): voi
 
 function drawIndex(ctx: Ctx, st: FaceStyle, suit: Suit, rank: number, w: number, h: number): void {
   const ink = st.ink[suit];
-  const label = RANK_LABELS[rank];
+  const label = LABELS[rank];
   // Top band: big rank on the left, suit on the right — readable when cards overlap.
   const fs = label.length > 1 ? h * 0.2 : h * 0.215;
   ctx.font = `bold ${Math.round(fs)}px ${st.rankFont}`;
@@ -441,7 +447,7 @@ function drawCourt(ctx: Ctx, st: FaceStyle, suit: Suit, rank: number, w: number,
   const fh = h * 0.62;
   const ink = st.ink[suit];
   if (st.court === 'letter') {
-    const L = RANK_LABELS[rank];
+    const L = LABELS[rank];
     withGlow(ctx, st, ink, 24, () => {
       ctx.fillStyle = ink;
       ctx.font = `bold ${Math.round(h * 0.36)}px ${st.rankFont}`;
