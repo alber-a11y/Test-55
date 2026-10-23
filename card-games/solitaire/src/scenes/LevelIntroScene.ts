@@ -29,46 +29,44 @@ export class LevelIntroScene extends BaseScene {
     const pill = topBar(this, t('levelN', { n: level }), () => this.go('Map'));
     const def = generateLevel(level);
 
-    const pw = Math.min(W - 60, 940);
-    const py = this.portrait ? 300 : 190;
-    const ph = this.portrait ? Math.min(H - 520, 1340) : H - 230;
+    const port = this.portrait;
+    const pw = port ? Math.min(W - 60, 940) : Math.min(W - 80, 1500);
+    const py = port ? 300 : 210;
+    const ph = port ? Math.min(H - 520, 1340) : H - 250;
     panel(this, W / 2 - pw / 2, py, pw, ph);
     ribbon(this, W / 2, py, Math.min(pw - 160, 600), def.boss ? `${t('bossLevel')}` : getLang() === 'en' ? city.en : city.ru, def.boss ? 0x8e2de2 : 0xe8364f);
-
-    // Stars already earned
+    // Left column (or top in portrait): stars, goal, obstacles.
+    const lx = port ? W / 2 : W / 2 - pw / 4;
     const st = save.data.adv.stars[level] ?? 0;
-    for (let k = 0; k < 3; k++) this.add.image(W / 2 + (k - 1) * 110, py + 150 - (k === 1 ? 16 : 0), k < st ? 'i_star' : 'i_starEmpty').setDisplaySize(100, 100);
-
-    // Goal
-    txt(this, W / 2, py + 255, t('goal'), 36, UI.gold);
+    for (let k = 0; k < 3; k++) this.add.image(lx + (k - 1) * 110, py + 150 - (k === 1 ? 16 : 0), k < st ? 'i_star' : 'i_starEmpty').setDisplaySize(100, 100);
+    txt(this, lx, py + 255, t('goal'), 36, UI.gold);
     const goal = def.goal === 'gold' ? t('goalGold', { n: def.slots.filter((s) => s.gold).length }) : t('goalClear');
-    txt(this, W / 2, py + 310, goal, 40, '#ffffff');
-
-    // Obstacles present
+    txt(this, lx, py + 310, goal, 40, '#ffffff');
     const obs: string[] = [];
     if (def.slots.some((s) => s.ice)) obs.push('ice');
     if (def.slots.some((s) => s.lock !== undefined)) obs.push('lock');
     if (def.slots.some((s) => s.bomb)) obs.push('bomb');
     if (def.slots.some((s) => s.gold)) obs.push('gold');
     if (def.slots.some((s) => s.coins)) obs.push('coin');
-    obs.forEach((o, i) => this.add.image(W / 2 + (i - (obs.length - 1) / 2) * 110, py + 400, `i_${o}`).setDisplaySize(90, 90));
+    obs.forEach((o, i) => this.add.image(lx + (i - (obs.length - 1) / 2) * 110, py + 400, `i_${o}`).setDisplaySize(90, 90));
 
-    // Boosters
-    const by = py + (this.portrait ? 560 : 520);
-    txt(this, W / 2, by - 70, t('pickBoosters'), 34, '#ffffff');
+    // Boosters: right column in landscape.
+    const rx = port ? W / 2 : W / 2 + pw / 4;
+    const by = port ? py + 560 : py + 170;
+    txt(this, rx, by - 70, t('pickBoosters'), 34, '#ffffff');
     const pre = BOOSTERS.filter((b) => b.pre);
-    const cols = this.portrait ? 2 : 4;
-    const bw = this.portrait ? 400 : 200;
-    const bh = this.portrait ? 170 : 220;
+    const cols = 2;
+    const bw = port ? 400 : 320;
+    const bh = port ? 170 : 160;
     pre.forEach((b, i) => {
       const col = i % cols;
       const row = Math.floor(i / cols);
-      const x = W / 2 + (col - (cols - 1) / 2) * (bw + 26);
+      const x = rx + (col - (cols - 1) / 2) * (bw + 26);
       const y = by + row * (bh + 26) + bh / 2;
       this.boosterTile(x, y, bw, bh, b.id, b.icon, b.price, pill, level);
     });
 
-    const play = new Button(this, W / 2, py + ph - 110, { w: 520, h: 150, color: 'green', label: t('start'), size: 60 });
+    const play = new Button(this, port ? W / 2 : lx, port ? py + ph - 110 : py + ph - 150, { w: 520, h: 150, color: 'green', label: t('start'), size: 60 });
     play.onClick(() => {
       const use = [...this.selected];
       for (const id of use) save.data.boosters[id]--;
@@ -104,7 +102,10 @@ export class LevelIntroScene extends BaseScene {
     c.add(status);
     const refresh = () => {
       const n = save.data.boosters[id] ?? 0;
-      status.setText(this.selected.has(id) ? '✓' : n > 0 ? `×${n}` : `▶ ${t('free')} / ${price}`);
+      status.setText(this.selected.has(id) ? '✓' : n > 0 ? `×${n}` : `+ ${t('free')}`);
+      status.setScale(1);
+      const lim = horizontal ? w - 170 : w - 16;
+      if (status.width > lim) status.setScale(lim / status.width);
       draw();
     };
     refresh();

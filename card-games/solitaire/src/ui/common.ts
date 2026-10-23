@@ -27,7 +27,12 @@ export function topBar(scene: BaseScene, title: string, onBack: () => void, opts
   const g = scene.add.graphics().setDepth(50);
   g.fillStyle(UI.inkN, 0.55).fillRect(0, 0, W, 150);
   new IconButton(scene, 80, 78, 'i_back', 104, 'dark').onClick(onBack).setDepth(51);
-  txt(scene, W / 2, 78, title, 56, UI.gold).setDepth(51);
+  const tt = txt(scene, W / 2, 78, title, 56, UI.gold).setDepth(51);
+  const maxW = W - (opts.coins === false ? 340 : 640);
+  if (tt.width > maxW) {
+    // Shift left into the free space first, then shrink.
+    tt.setScale(Math.max(0.6, maxW / tt.width));
+  }
   if (opts.coins === false) return null;
   const pill = new Pill(scene, W - 170, 78, 'i_coin', save.data.coins, 250).setDepth(51);
   return pill;

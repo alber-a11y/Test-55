@@ -200,6 +200,20 @@ export class Klondike implements PileGame {
     return solveKlondike(this, 4000).result === 'unsolvable';
   }
 
+  /** Aces, twos and cards whose opposite-color lower ranks are home. */
+  safeStep(): MoveRef | null {
+    const fr = (s: number) => this.founds.find((f) => f.cards.length && f.cards[0].suit === s)?.cards.length ?? 0;
+    for (const p of [this.pile('waste'), ...this.tabs]) {
+      if (!p.cards.length) continue;
+      const i = p.cards.length - 1;
+      const c = p.cards[i];
+      const opp = isRedSuit(c.suit) ? [0, 3] : [1, 2];
+      if (!(c.rank <= 2 || (fr(opp[0]) >= c.rank - 1 && fr(opp[1]) >= c.rank - 1))) continue;
+      for (const f of this.founds) if (this.canMove({ from: p.id, index: i, to: f.id })) return { from: p.id, index: i, to: f.id };
+    }
+    return null;
+  }
+
   hint(): Hint {
     const r = solveKlondike(this, 12_000);
     if (r.first) return r.first;

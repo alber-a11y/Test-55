@@ -143,15 +143,16 @@ export class MapScene extends BaseScene {
       drawCityScene(c, city, W, 520, { stars: true });
       this.textures.addCanvas(pkey, cv);
     }
-    objs.push(this.add.image(0, yTop, pkey).setOrigin(0).setDepth(-19).setAlpha(0.9));
+    // Panorama greets the player when entering the city (bottom of the band).
+    objs.push(this.add.image(0, yBottom, pkey).setOrigin(0, 1).setDepth(-19).setAlpha(0.9));
     // Decorative suit sprinkles
     for (let k = 0; k < 8; k++) {
-      const s = this.add.text(((k * 263) % (W - 80)) + 40, yTop + 600 + ((k * 397) % Math.max(1, h - 700)), ['♠', '♥', '♦', '♣'][k % 4], { fontFamily: 'Georgia', fontSize: '70px', color: '#ffffff' }).setAlpha(0.07).setDepth(-18);
+      const s = this.add.text(((k * 263) % (W - 80)) + 40, yTop + 100 + ((k * 397) % Math.max(1, h - 700)), ['♠', '♥', '♦', '♣'][k % 4], { fontFamily: 'Georgia', fontSize: '70px', color: '#ffffff' }).setAlpha(0.07).setDepth(-18);
       objs.push(s);
     }
     const lap = Math.floor(ci / CITIES.length);
     const name = (getLang() === 'en' ? city.en : city.ru) + (lap > 0 ? ` ${'★'.repeat(Math.min(lap, 5))}` : '');
-    const banner = this.add.container(W / 2, yTop + 470).setDepth(-5);
+    const banner = this.add.container(W / 2, yBottom - 470).setDepth(-5);
     const g = this.add.graphics();
     g.fillStyle(UI.inkN, 0.75).fillRoundedRect(-260, -50, 520, 100, 50);
     banner.add([g, txt(this, 0, 0, name, 52, city.accent)]);

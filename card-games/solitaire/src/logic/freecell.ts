@@ -165,8 +165,22 @@ export class FreeCell implements PileGame {
     return 0;
   }
 
-  /** Next safe foundation move (no card could ever need it back), for auto-play. */
+  safeStep(): MoveRef | null {
+    return this.autoSafe();
+  }
+
+  /** Any foundation move (auto-complete). */
   autoStep(): MoveRef | null {
+    for (const p of [...this.cells, ...this.tabs]) {
+      if (!p.cards.length) continue;
+      const i = p.cards.length - 1;
+      for (const f of this.founds) if (this.canMove({ from: p.id, index: i, to: f.id })) return { from: p.id, index: i, to: f.id };
+    }
+    return null;
+  }
+
+  /** Next safe foundation move (no card could ever need it back), for auto-play. */
+  private autoSafe(): MoveRef | null {
     for (const p of [...this.cells, ...this.tabs]) {
       if (!p.cards.length) continue;
       const i = p.cards.length - 1;

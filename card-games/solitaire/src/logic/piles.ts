@@ -50,6 +50,8 @@ export interface PileGame {
   moves: number;
   /** Cards that can go to the foundation now (auto-complete step), or null. */
   autoStep(): MoveRef | null;
+  /** Foundation move that can never hurt (auto-play), or null. */
+  safeStep?(): MoveRef | null;
   /** All face-up and nothing hidden — finishing is trivial. */
   readonly canAutoComplete: boolean;
   serialize(): unknown;
