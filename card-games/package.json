@@ -1,0 +1,25 @@
+{
+  "name": "card-games",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev:solitaire": "vite --config solitaire/vite.config.ts",
+    "build:solitaire": "tsc --noEmit -p solitaire && vite build --config solitaire/vite.config.ts",
+    "preview:solitaire": "vite preview --config solitaire/vite.config.ts",
+    "dev:durak": "vite --config durak/vite.config.ts",
+    "build:durak": "tsc --noEmit -p durak && vite build --config durak/vite.config.ts",
+    "preview:durak": "vite preview --config durak/vite.config.ts",
+    "typecheck": "tsc --noEmit -p solitaire",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "phaser": "^3.90.0"
+  },
+  "devDependencies": {
+    "playwright": "^1.56.1",
+    "typescript": "^5.6.3",
+    "vite": "^6.4.3",
+    "vitest": "^3.2.4"
+  }
+}
