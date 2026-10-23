@@ -111,7 +111,7 @@ export class CardView extends Phaser.GameObjects.Container {
   }
 
   /** Tween to a position. */
-  moveTo(x: number, y: number, duration = 220, delay = 0, ease = 'Cubic.Out'): Phaser.Tweens.Tween | null {
+  glide(x: number, y: number, duration = 220, delay = 0, ease = 'Cubic.Out'): Phaser.Tweens.Tween | null {
     if (duration <= 0) {
       this.setPosition(x, y);
       return null;

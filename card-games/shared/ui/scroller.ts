@@ -19,7 +19,7 @@ export class Scroller {
   private downInside = false;
 
   constructor(
-    private scene: Phaser.Scene,
+    scene: Phaser.Scene,
     readonly x: number,
     readonly y: number,
     readonly w: number,

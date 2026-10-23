@@ -350,17 +350,17 @@ export class Slider extends Phaser.GameObjects.Container {
 /** On/off switch. */
 export class Toggle extends Phaser.GameObjects.Container {
   private g: Phaser.GameObjects.Graphics;
-  constructor(scene: Phaser.Scene, x: number, y: number, private on: boolean, private onChange: (v: boolean) => void) {
+  constructor(scene: Phaser.Scene, x: number, y: number, private isOn: boolean, private onChange: (v: boolean) => void) {
     super(scene, x, y);
     this.g = scene.add.graphics();
     this.add(this.g);
     this.setSize(120, 64);
     this.setInteractive({ useHandCursor: true });
     this.on('pointerup', () => {
-      this.on = !this.on;
+      this.isOn = !this.isOn;
       audio.play('click', { vol: 0.5 });
       this.draw();
-      this.onChange(this.on);
+      this.onChange(this.isOn);
     });
     this.draw();
     scene.add.existing(this);
@@ -369,8 +369,8 @@ export class Toggle extends Phaser.GameObjects.Container {
     const g = this.g;
     g.clear();
     g.fillStyle(UI.inkN, 1).fillRoundedRect(-60, -32, 120, 64, 32);
-    g.fillStyle(this.on ? 0x5ad17e : 0x58627c, 1).fillRoundedRect(-56, -28, 112, 56, 28);
-    g.fillStyle(0xffffff, 1).fillCircle(this.on ? 28 : -28, 0, 23);
+    g.fillStyle(this.isOn ? 0x5ad17e : 0x58627c, 1).fillRoundedRect(-56, -28, 112, 56, 28);
+    g.fillStyle(0xffffff, 1).fillCircle(this.isOn ? 28 : -28, 0, 23);
   }
 }
 

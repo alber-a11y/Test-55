@@ -552,3 +552,32 @@ export function renderWild(st: FaceStyle, w = CARD_TW, h = CARD_TH): HTMLCanvasE
 
 /** Suit glyph helper re-exported for UI icons. */
 export { suitPath };
+
+/** Round avatar made of a court portrait (rank 11..13) on a suit-colored disc. */
+export function renderPortrait(st: FaceStyle, suit: Suit, rank: number, size = 160): HTMLCanvasElement {
+  const [cv, ctx] = makeCanvas(size, size);
+  const r = size / 2;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(r, r, r - 4, 0, Math.PI * 2);
+  const g = ctx.createLinearGradient(0, 0, 0, size);
+  g.addColorStop(0, lighten(st.robes?.[suit] ?? st.ink[suit], 0.55));
+  g.addColorStop(1, lighten(st.robes?.[suit] ?? st.ink[suit], 0.2));
+  ctx.fillStyle = g;
+  ctx.fill();
+  ctx.clip();
+  ctx.translate(-size * 0.05, size * 0.06);
+  drawBust(ctx, st, suit, rank, size * 1.1, size * 1.0);
+  ctx.restore();
+  ctx.lineWidth = 6;
+  ctx.strokeStyle = '#1a1426';
+  ctx.beginPath();
+  ctx.arc(r, r, r - 4, 0, Math.PI * 2);
+  ctx.stroke();
+  ctx.lineWidth = 3;
+  ctx.strokeStyle = st.gold ?? '#e8b923';
+  ctx.beginPath();
+  ctx.arc(r, r, r - 9, 0, Math.PI * 2);
+  ctx.stroke();
+  return cv;
+}

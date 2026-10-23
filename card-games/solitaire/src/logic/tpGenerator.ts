@@ -64,7 +64,9 @@ export function levelParams(level: number): Params {
     slack: level <= 40 ? 5 : level <= 100 ? 4 : 3,
     boss,
   };
-  const p: Params = { ...base, ...(early[level] ?? {}) };
+  // Hand-tuned levels only have the mechanics they list.
+  const calm: Partial<Params> = early[level] ? { ice: 0, ice2: 0, locks: 0, bombs: 0, gold: 0, coins: 1, wilds: 0, boss: false } : {};
+  const p: Params = { ...base, ...calm, ...(early[level] ?? {}) };
   if (boss && !early[level]) {
     p.slack -= 1;
     p.ice += 2;
