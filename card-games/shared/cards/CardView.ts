@@ -48,16 +48,26 @@ export class CardView extends Phaser.GameObjects.Container {
     this.img.setDisplaySize(this.cw, this.ch);
   }
 
+  private flipTween: Phaser.Tweens.Tween | null = null;
+
   setFaceUp(up: boolean, animate = true, delay = 0): void {
     if (up === this.faceUp && !this.flipping) return;
     this.faceUp = up;
+    if (this.flipping) {
+      // A flip is running: finish instantly with the latest state.
+      this.flipTween?.stop();
+      this.flipTween = null;
+      this.flipping = false;
+      this.scaleX = 1;
+      this.refresh();
+      return;
+    }
     if (!animate) {
       this.refresh();
       return;
     }
     this.flipping = true;
-    const sx = this.scaleX || 1;
-    this.scene.tweens.add({
+    this.flipTween = this.scene.tweens.add({
       targets: this,
       scaleX: 0,
       duration: 90,
@@ -65,12 +75,15 @@ export class CardView extends Phaser.GameObjects.Container {
       ease: 'Sine.In',
       onComplete: () => {
         this.refresh();
-        this.scene.tweens.add({
+        this.flipTween = this.scene.tweens.add({
           targets: this,
-          scaleX: sx,
+          scaleX: 1,
           duration: 110,
           ease: 'Sine.Out',
-          onComplete: () => (this.flipping = false),
+          onComplete: () => {
+            this.flipping = false;
+            this.flipTween = null;
+          },
         });
       },
     });
@@ -110,12 +123,23 @@ export class CardView extends Phaser.GameObjects.Container {
     this.add(o);
   }
 
-  /** Tween to a position. */
+  private moveTween: Phaser.Tweens.Tween | null = null;
+
+  /** Tween to a position (replaces a previous move, never touches a running flip). */
   glide(x: number, y: number, duration = 220, delay = 0, ease = 'Cubic.Out'): Phaser.Tweens.Tween | null {
+    this.stopGlide();
     if (duration <= 0) {
       this.setPosition(x, y);
       return null;
     }
-    return this.scene.tweens.add({ targets: this, x, y, duration, delay, ease });
+    this.moveTween = this.scene.tweens.add({ targets: this, x, y, duration, delay, ease, onComplete: () => (this.moveTween = null) });
+    return this.moveTween;
+  }
+
+  stopGlide(): void {
+    if (this.moveTween) {
+      this.moveTween.stop();
+      this.moveTween = null;
+    }
   }
 }

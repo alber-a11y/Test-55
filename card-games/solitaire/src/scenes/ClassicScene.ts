@@ -317,10 +317,11 @@ export class ClassicScene extends BaseScene {
       const v = this.views.get(id)!;
       v.setDepth(tgt.depth);
       if (v.faceUp !== tgt.up) v.setFaceUp(tgt.up, animate);
-      if (animate && (Math.abs(v.x - tgt.x) > 1 || Math.abs(v.y - tgt.y) > 1)) {
-        this.tweens.killTweensOf(v);
-        v.glide(tgt.x, tgt.y, 190);
-      } else if (!animate) v.setPosition(tgt.x, tgt.y);
+      if (animate && (Math.abs(v.x - tgt.x) > 1 || Math.abs(v.y - tgt.y) > 1)) v.glide(tgt.x, tgt.y, 190);
+      else if (!animate) {
+        v.stopGlide();
+        v.setPosition(tgt.x, tgt.y);
+      }
       v.setLifted(false);
     }
     if (this.stockLabel) {
@@ -429,7 +430,7 @@ export class ClassicScene extends BaseScene {
     d.moved = true;
     const step = d.views.length > 1 ? d.views[1].y - d.views[0].y || this.ch * 0.28 : 0;
     d.views.forEach((v, k) => {
-      this.tweens.killTweensOf(v);
+      v.stopGlide();
       v.setPosition(p.x - d.ox, p.y - d.oy + k * step);
     });
   }

@@ -2,7 +2,7 @@ import Phaser from 'phaser';
 import { audio } from '@shared/audio/audio';
 import { setBootProgress } from '@shared/core/bootui';
 import { setLang } from '@shared/core/i18n';
-import { ads } from '@shared/platform/ads';
+import { adConfig, ads } from '@shared/platform/ads';
 import { installGuards } from '@shared/platform/guards';
 import { initPlatform, platform } from '@shared/platform/platform';
 import { platformConfig } from '@shared/platform/types';
@@ -64,7 +64,7 @@ async function boot(): Promise<void> {
   };
   window.addEventListener('resize', onResize);
   window.addEventListener('orientationchange', onResize);
-  if (new URLSearchParams(location.search).has('debug')) Object.assign(window as any, { __game: game, __save: save, __ads: ads });
+  if (new URLSearchParams(location.search).has('debug')) Object.assign(window as any, { __game: game, __save: save, __ads: ads, __adConfig: adConfig });
 }
 
 void boot();

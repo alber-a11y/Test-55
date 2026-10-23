@@ -125,10 +125,11 @@ export class StubAdapter implements PlatformAdapter {
       // Rewarded closed early → no reward; interstitial can be closed any time after it ends.
       btn.onclick = () => {
         if (kind === 'interstitial' && left > 0) return;
-        finish(false);
+        // A fullscreen ad counts as shown when closed after its timer.
+        finish(kind === 'interstitial');
       };
-      // Exposed for automated tests.
-      (window as any).__stubAdSkip = () => finish(kind === 'rewarded');
+      // Exposed for automated tests: finish the ad as fully watched.
+      (window as any).__stubAdSkip = () => finish(true);
     });
   }
 }
