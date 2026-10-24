@@ -123,10 +123,8 @@ export class TriPeaksScene extends BaseScene {
     audio.playMusic(data.mode === 'blitz' ? 'blitz' : 'game', data.mode === 'adventure' ? cityOfLevel(data.level ?? 1).tr : 0);
     ads.inGameplay = true;
     platform.gameplayStart();
-    this.unsubPause = pauseHub.subscribe((p) => {
-      if (p) this.tweens.pauseAll();
-      else this.tweens.resumeAll();
-    });
+    // Animations freeze only for system pauses (ad, hidden tab); the pause menu itself must stay alive.
+    this.unsubPause = pauseHub.subscribe(() => (pauseHub.systemPaused ? this.tweens.pauseAll() : this.tweens.resumeAll()));
     this.events.once('shutdown', () => {
       ads.inGameplay = false;
       platform.gameplayStop();

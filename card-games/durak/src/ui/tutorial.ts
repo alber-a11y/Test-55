@@ -34,7 +34,5 @@ export function showTip(scene: Phaser.Scene, text: string, point?: { x: number; 
     c.destroy();
     onDone?.();
   });
-  c.setAlpha(0);
-  scene.tweens.add({ targets: c, alpha: 1, duration: 200 });
   return c;
 }

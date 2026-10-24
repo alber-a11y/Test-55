@@ -42,7 +42,6 @@ export function openModal(
   if (opts.closable !== false) {
     root.add(new IconButton(scene, x + w - 20, y + 20, 'i_close', 90, 'red').onClick(close));
   }
-  root.setAlpha(0);
-  scene.tweens.add({ targets: root, alpha: 1, duration: 160 });
+  // No fade-in tween: tweens may be paused (ads / hidden tab) and the modal must always show.
   return { root, x, y, w, h, close };
 }

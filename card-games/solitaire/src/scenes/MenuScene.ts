@@ -50,9 +50,16 @@ export class MenuScene extends BaseScene {
     // Resume classic game
     let modesTop = playY + 140;
     if (save.data.resume) {
+      // Portrait: under PLAY (mode cards move down). Landscape: beside PLAY so it never hides behind the cards.
       const r = save.data.resume as { mode: string };
-      new Button(this, W / 2, playY + 160, { w: 520, h: 90, color: 'blue', label: `${t('resume')}: ${t(r.mode)}`, size: 32 }).onClick(() => this.go('Classic', { resume: true }));
-      modesTop += 110;
+      const label = `${t('resume')}: ${t(r.mode)}`;
+      if (port) {
+        new Button(this, W / 2, playY + 160, { w: 620, h: 90, color: 'blue', label, size: 32 }).onClick(() => this.go('Classic', { resume: true }));
+        modesTop += 110;
+      } else {
+        const rb = new Button(this, W / 2 + 310 + 40 + 170, playY, { w: 340, h: 120, color: 'blue', label: t('resume'), sub: t(r.mode), size: 30 }).onClick(() => this.go('Classic', { resume: true }));
+        if (rb.label && rb.label.width > 320) rb.label.setScale(320 / rb.label.width);
+      }
     }
 
     // Mode cards

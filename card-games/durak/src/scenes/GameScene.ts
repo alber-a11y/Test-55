@@ -144,7 +144,8 @@ export class GameScene extends BaseScene {
     audio.playMusic(data.opponents.some((o) => o.boss) ? 'boss' : 'game');
     ads.inGameplay = true;
     platform.gameplayStart();
-    const unsub = pauseHub.subscribe((p) => (p ? this.tweens.pauseAll() : this.tweens.resumeAll()));
+    // Animations freeze only for system pauses (ad, hidden tab); the pause menu itself must stay alive.
+    const unsub = pauseHub.subscribe(() => (pauseHub.systemPaused ? this.tweens.pauseAll() : this.tweens.resumeAll()));
     this.events.once('shutdown', () => {
       ads.inGameplay = false;
       platform.gameplayStop();
