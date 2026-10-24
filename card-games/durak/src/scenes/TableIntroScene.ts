@@ -44,10 +44,11 @@ export class TableIntroScene extends BaseScene {
       const x = lx + (i - (n - 1) / 2) * (fs + 50);
       this.add.image(x, py + 160 + fs / 2, faceTex(this.textures, `intro_${cfg.idx}_${i}`, o.face, cfg.boss ? 'smug' : 'neutral')).setDisplaySize(fs, fs);
       txt(this, x, py + 190 + fs, o.name, 30, o.boss ? UI.gold : '#ffffff');
-      txt(this, x, py + 226 + fs, `${t('trait_' + o.trait)} · ${t('lvl' + o.ai.level)}`, 22, '#cfd6e6', { strokeThickness: 0 });
+      txt(this, x, py + 222 + fs, t('trait_' + o.trait), 22, '#cfd6e6', { strokeThickness: 0 });
+      txt(this, x, py + 250 + fs, t('lvl' + o.ai.level), 22, UI.gold, { strokeThickness: 0 });
     });
     // Rules
-    let y = py + 300 + fs;
+    let y = py + 320 + fs;
     const rules = [cfg.rules.transfer ? t('r_transfer') : t('r_podkidnoy'), t('r_players', { n: cfg.rules.players }), t('r_deck', { n: cfg.rules.deck })];
     if (cfg.rules.teams) rules.push(t('r_teams'));
     if (cfg.rules.cheat) rules.push(t('r_cheat'));

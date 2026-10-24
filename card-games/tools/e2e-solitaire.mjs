@@ -106,8 +106,8 @@ await page.evaluate(async () => {
   s.sync(false);
   if (s.gm.won) s.onWin();
 });
-await sleep(6000);
-check('klondike win → Result', (await active()).includes('Result'), await active());
+const gotResult = await page.waitForFunction(() => window.__game.scene.getScenes(true).some((s) => s.scene.key === 'Result'), null, { timeout: 60000, polling: 500 }).then(() => true, () => false);
+check('klondike win → Result', gotResult, await active());
 await page.screenshot({ path: `${OUT}_result.png` });
 
 // ---- Rewarded: TriPeaks hint offer → ad → reward
