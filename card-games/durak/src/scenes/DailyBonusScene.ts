@@ -22,16 +22,17 @@ export class DailyBonusScene extends BaseScene {
     const st = dailyBonusState();
     const cur = st.can ? st.day : save.data.daily.day;
     const cols = this.portrait ? 3 : 4;
-    const tw = this.portrait ? 300 : 300;
-    const th = this.portrait ? 300 : 280;
-    const y0 = this.portrait ? 300 : 210;
+    const tw = 300;
+    const th = this.portrait ? 300 : 260;
+    const y0 = this.portrait ? 300 : 170;
     DAILY_REWARDS.forEach((r, i) => {
       const day = i + 1;
       const last = i === 6;
-      const col = last ? 0 : i % cols;
-      const row = last ? Math.ceil(6 / cols) : Math.floor(i / cols);
+      // Day 7 is a wide tile: its own row in portrait, the last two cells of row 2 in landscape (keeps clear of the buttons).
+      const col = last ? (this.portrait ? 0 : 2.5) : i % cols;
+      const row = last ? (this.portrait ? 2 : 1) : Math.floor(i / cols);
       const w = last ? tw * (this.portrait ? 3 : 2) + 20 * (this.portrait ? 2 : 1) : tw;
-      const x = last ? W / 2 : W / 2 + (col - (cols - 1) / 2) * (tw + 20);
+      const x = last && this.portrait ? W / 2 : W / 2 + (col - (cols - 1) / 2) * (tw + 20);
       const y = y0 + row * (th + 20) + th / 2;
       const done = st.can ? day < cur : day <= cur;
       const today = st.can && day === cur;

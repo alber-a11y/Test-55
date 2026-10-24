@@ -58,9 +58,10 @@ export class ResultScene extends BaseScene {
     const won = data.won;
     if (won) audio.playMusic('menu');
 
-    const pw = Math.min(W - 60, 920);
-    const ph = this.portrait ? 1180 : 900;
-    const py = Math.max(170, (H - ph) / 2);
+    const port = this.portrait;
+    const pw = Math.min(W - 60, port ? 920 : 1120);
+    const ph = port ? 1180 : 900;
+    const py = Math.max(port ? 170 : 110, (H - ph) / 2);
     panel(this, W / 2 - pw / 2, py, pw, ph);
     const title = data.mode === 'blitz' ? t('timeUp') : won ? t('victory') : data.exploded ? t('exploded') : t('defeat');
     ribbon(this, W / 2, py, Math.min(pw - 140, 620), title, won ? 0x2c9a52 : 0xc8323c, 56);
@@ -95,7 +96,7 @@ export class ResultScene extends BaseScene {
       y += 240;
     } else {
       this.add.image(W / 2, y + 110, won ? 'i_trophy' : 'i_cards').setDisplaySize(180, 180);
-      y += 230;
+      y += port ? 230 : 210;
     }
 
     // Stats line
@@ -120,33 +121,54 @@ export class ResultScene extends BaseScene {
       y += 230;
     }
 
-    // Buttons
+    // Buttons. An extra action (map / +30 s) sits above the pair in portrait and joins the row in landscape.
     const by = py + ph - 120;
     const next = this.nextTarget();
+    type B = { label: string; color: 'green' | 'gold' | 'dark' | 'purple'; w: number; size: number; ad?: boolean; fn: () => void };
+    let extra: B | null = null;
     if (data.mode === 'blitz' && data.canExtend && data.blitzState && !data.blitzState.extended) {
-      new Button(this, W / 2, by - 160, { w: 520, h: 120, color: 'purple', label: t('plus30'), size: 40, ad: true }).onClick(() =>
-        watchAd(this, 'blitz_extend', () => {
-          data.blitzState!.extended = true;
-          data.blitzState!.timeLeft = 30_000;
-          this.go('TriPeaks', { mode: 'blitz', state: data.blitzState });
-        }),
-      );
+      extra = {
+        label: t('plus30'),
+        color: 'purple',
+        w: 520,
+        size: 40,
+        ad: true,
+        fn: () =>
+          watchAd(this, 'blitz_extend', () => {
+            data.blitzState!.extended = true;
+            data.blitzState!.timeLeft = 30_000;
+            this.go('TriPeaks', { mode: 'blitz', state: data.blitzState });
+          }),
+      };
     }
+    let pair: [B, B];
     if (won && hasReward) {
-      new Button(this, W / 2 - 200, by, { w: 360, h: 130, color: 'green', label: t('x2'), size: 38, ad: true }).onClick(() =>
-        watchAd(this, 'result_x2', () => this.claim(2, next)),
-      );
-      new Button(this, W / 2 + 200, by, { w: 340, h: 130, color: 'gold', label: t('next'), size: 44 }).onClick(() => this.claim(1, next));
-      if (data.mode === 'tripeaks')
-        new Button(this, W / 2, by - 160, { w: 360, h: 100, color: 'dark', label: t('map'), size: 34 }).onClick(() => this.claim(1, { key: 'Map', data: {}, ad: 'result_map' }));
+      pair = [
+        { label: t('x2'), color: 'green', w: 360, size: 38, ad: true, fn: () => watchAd(this, 'result_x2', () => this.claim(2, next)) },
+        { label: t('next'), color: 'gold', w: 340, size: 44, fn: () => this.claim(1, next) },
+      ];
+      if (data.mode === 'tripeaks') extra = { label: t('map'), color: 'dark', w: 360, size: 34, fn: () => this.claim(1, { key: 'Map', data: {}, ad: 'result_map' }) };
     } else {
       const retry = this.retryTarget();
-      new Button(this, W / 2 - 200, by, { w: 360, h: 130, color: 'green', label: data.mode === 'tripeaks' ? t('retry') : t('newDeal'), size: 40 }).onClick(() =>
-        this.claim(1, retry),
-      );
-      new Button(this, W / 2 + 200, by, { w: 340, h: 130, color: 'dark', label: data.mode === 'tripeaks' ? t('map') : t('menu'), size: 40 }).onClick(() =>
-        this.claim(1, data.mode === 'tripeaks' ? { key: 'Map', data: {}, ad: 'result_map' } : data.mode === 'daily' ? { key: 'Daily', data: {}, ad: 'result_menu' } : { key: 'Menu', data: {}, ad: 'result_menu' }),
-      );
+      const back: Next = data.mode === 'tripeaks' ? { key: 'Map', data: {}, ad: 'result_map' } : data.mode === 'daily' ? { key: 'Daily', data: {}, ad: 'result_menu' } : { key: 'Menu', data: {}, ad: 'result_menu' };
+      pair = [
+        { label: data.mode === 'tripeaks' ? t('retry') : t('newDeal'), color: 'green', w: 360, size: 40, fn: () => this.claim(1, retry) },
+        { label: data.mode === 'tripeaks' ? t('map') : t('menu'), color: 'dark', w: 340, size: 40, fn: () => this.claim(1, back) },
+      ];
+    }
+    const mkBtn = (b: B, x: number, y: number, w: number, h: number) => new Button(this, x, y, { w, h, color: b.color, label: b.label, size: b.size, ad: b.ad }).onClick(b.fn);
+    if (extra && !port) {
+      const ws = [300, 330, 310];
+      const gap = 30;
+      let x = W / 2 - (ws[0] + ws[1] + ws[2] + gap * 2) / 2;
+      [extra, ...pair].forEach((b, i) => {
+        mkBtn(b, x + ws[i] / 2, by, ws[i], 130);
+        x += ws[i] + gap;
+      });
+    } else {
+      if (extra) mkBtn(extra, W / 2, by - 160, extra.w, extra.color === 'dark' ? 100 : 120);
+      mkBtn(pair[0], W / 2 - 200, by, pair[0].w, 130);
+      mkBtn(pair[1], W / 2 + 200, by, pair[1].w, 130);
     }
     if (won) this.confetti();
     this.setupScene();

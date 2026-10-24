@@ -20,9 +20,10 @@ export class QuickSetupScene extends BaseScene {
     const H = this.H;
     const q = save.data.settings.quick;
     const pw = Math.min(W - 60, 960);
-    const py = this.portrait ? 240 : 180;
-    const rh = this.portrait ? 150 : 110;
-    panel(this, W / 2 - pw / 2, py, pw, rh * 6 + 330);
+    // Landscape rows are tighter so the start button stays on screen.
+    const py = this.portrait ? 240 : 170;
+    const rh = this.portrait ? 150 : 96;
+    panel(this, W / 2 - pw / 2, py, pw, rh * 6 + (this.portrait ? 330 : 260));
     ribbon(this, W / 2, py, Math.min(pw - 160, 560), t('quick'), 0x2f6fd0);
     let y = py + 110;
     const x0 = W / 2 - pw / 2 + 50;
@@ -50,9 +51,9 @@ export class QuickSetupScene extends BaseScene {
     row(t('qs_deck'));
     seg<24 | 36 | 52>([24, 36, 52], q.deck, ['24', '36', '52'], (v) => (q.deck = v));
     y += rh;
-    row(t('qs_level'));
+    row(t('qs_level')).setY(y - 12);
     seg([1, 2, 3, 4], q.level, ['1', '2', '3', '4'], (v) => (q.level = v));
-    txt(this, x0 + 260, y + 44, t('lvl' + q.level), 24, UI.gold).setOrigin(0, 0.5);
+    txt(this, x0, y + 26, t('lvl' + q.level), 24, UI.gold).setOrigin(0, 0.5);
     y += rh;
     const tog = (label: string, val: boolean, set: (v: boolean) => void, enabled = true) => {
       row(label).setAlpha(enabled ? 1 : 0.4);
@@ -66,7 +67,7 @@ export class QuickSetupScene extends BaseScene {
     tog(t('qs_transfer'), q.transfer, (v) => (q.transfer = v));
     tog(t('qs_teams'), q.teams, (v) => (q.teams = v), q.players === 4);
     tog(t('qs_cheat'), q.cheat, (v) => (q.cheat = v));
-    const play = new Button(this, W / 2, y + 60, { w: 520, h: 150, color: 'green', label: t('start'), size: 60 }).onClick(() => {
+    const play = new Button(this, W / 2, y + 60, { w: 520, h: this.portrait ? 150 : 130, color: 'green', label: t('start'), size: 60 }).onClick(() => {
       const rules: DRules = { ...DEFAULT_RULES, players: q.players, deck: q.deck, transfer: q.transfer, teams: q.players === 4 && q.teams, cheat: q.cheat };
       const seed = (Math.random() * 1e9) | 0;
       audio.play('shuffle');

@@ -121,6 +121,7 @@ export class Button extends Phaser.GameObjects.Container {
     if (o.label !== undefined) {
       this.label = txt(scene, lx, o.sub ? -size * 0.36 - 4 : -4, o.label, size, tc, stroke);
       this.add(this.label);
+      this.fitLabel();
     }
     if (o.sub) {
       this.sub = txt(scene, lx, size * 0.44, o.sub, Math.max(22, Math.round(size * 0.55)), tc, stroke);
@@ -212,7 +213,16 @@ export class Button extends Phaser.GameObjects.Container {
 
   setLabel(s: string): this {
     this.label?.setText(s);
+    this.fitLabel();
     return this;
+  }
+
+  /** Long labels shrink so they never spill out of the button. */
+  private fitLabel(): void {
+    if (!this.label) return;
+    this.label.setScale(1);
+    const room = this.o.w - 36 - (this.icon && this.o.label ? (this.o.iconSize ?? this.o.h * 0.62) + 6 : 0);
+    if (this.label.width > room) this.label.setScale(room / this.label.width);
   }
 
   setSub(s: string): this {

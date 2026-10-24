@@ -17,14 +17,20 @@ interface Next {
   ad?: string;
 }
 
-/** Shared layout: big title, art, reward row, ×2 / claim buttons, then `next`. */
-function rewardScreen(scene: BaseScene, title: string, art: () => void, reward: Reward, next: Next, x2: string): void {
+/**
+ * Shared layout: big title, art, reward row, ×2 / claim buttons, then `next`.
+ * Portrait stacks art over the reward; landscape puts them side by side. `art` gets its centre and max width.
+ */
+function rewardScreen(scene: BaseScene, title: string, art: (x: number, cy: number, maxW: number) => void, reward: Reward, next: Next, x2: string): void {
   const W = scene.scale.width;
   const H = scene.scale.height;
-  ribbon(scene, W / 2, scene.portrait ? H * 0.16 : 120, Math.min(W - 200, 700), title, 0x8e2de2, 56);
-  art();
-  txt(scene, W / 2, scene.portrait ? H * 0.62 : H * 0.62, t('reward'), 40, UI.gold);
-  scene.add.existing(rewardRow(scene, W / 2, scene.portrait ? H * 0.69 : H * 0.72, reward, 120));
+  const port = scene.portrait;
+  ribbon(scene, W / 2, port ? H * 0.16 : 120, Math.min(W - 200, 700), title, 0x8e2de2, 56);
+  const col = Math.min(W / 2, 760);
+  art(port ? W / 2 : W / 2 - col / 2, port ? H * 0.38 : H * 0.47, port ? W - 80 : col - 40);
+  const rx = port ? W / 2 : W / 2 + col / 2;
+  txt(scene, rx, port ? H * 0.62 : H * 0.38, t('reward'), 40, UI.gold);
+  scene.add.existing(rewardRow(scene, rx, port ? H * 0.69 : H * 0.52, reward, 120));
   let done = false;
   const finish = (mult: number) => {
     if (done) return;
@@ -51,14 +57,14 @@ export class LevelUpScene extends BaseScene {
     rewardScreen(
       this,
       t('levelUp'),
-      () => {
-        const W = this.W;
-        const cy = this.portrait ? this.H * 0.38 : this.H * 0.4;
-        const rays = this.add.image(W / 2, cy, 'i_sparkle').setDisplaySize(620, 620).setAlpha(0.3);
+      (ax, cy, maxW) => {
+        const rays = this.add.image(ax, cy, 'i_sparkle').setDisplaySize(620, 620).setAlpha(0.3);
         this.tweens.add({ targets: rays, angle: 360, duration: 10000, repeat: -1 });
-        this.add.image(W / 2, cy, `avatar_${save.data.avatar}`).setDisplaySize(300, 300);
-        const lt = txt(this, W / 2, cy + 190, `${t('playerLevel')} ${lv}`, 60, '#ffffff');
-        this.tweens.add({ targets: lt, scale: 1.1, duration: 500, yoyo: true, repeat: -1 });
+        this.add.image(ax, cy, `avatar_${save.data.avatar}`).setDisplaySize(300, 300);
+        const lt = txt(this, ax, cy + 190, `${t('playerLevel')} ${lv}`, 60, '#ffffff');
+        const k = Math.min(1, maxW / lt.width);
+        lt.setScale(k);
+        this.tweens.add({ targets: lt, scale: k * 1.1, duration: 500, yoyo: true, repeat: -1 });
       },
       levelUpReward(lv),
       data.next,
@@ -82,13 +88,12 @@ export class CityUnlockScene extends BaseScene {
     rewardScreen(
       this,
       t('cityComplete'),
-      () => {
-        const W = this.W;
-        const cy = this.portrait ? this.H * 0.36 : this.H * 0.38;
-        txt(this, W / 2, cy - 120, t('welcomeTo', { city: getLang() === 'en' ? nextCity.en : nextCity.ru }), 50, '#ffffff');
+      (ax, cy, maxW) => {
+        const wt = txt(this, ax, cy - 120, t('welcomeTo', { city: getLang() === 'en' ? nextCity.en : nextCity.ru }), 50, '#ffffff');
+        if (wt.width > maxW) wt.setScale(maxW / wt.width);
         const key = `prev_back_city_${done.id}`;
         if (!this.textures.exists(key)) this.textures.addCanvas(key, renderBack(backStyle(`city_${done.id}`)));
-        const card = this.add.image(W / 2, cy + 80, key).setDisplaySize(170, 238).setAngle(-6);
+        const card = this.add.image(ax, cy + 80, key).setDisplaySize(170, 238).setAngle(-6);
         this.tweens.add({ targets: card, angle: 6, duration: 900, yoyo: true, repeat: -1, ease: 'Sine.InOut' });
       },
       { coins: 500, boosters: { breaker: 1, startJoker: 1 } },

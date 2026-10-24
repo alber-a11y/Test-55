@@ -340,7 +340,7 @@ export class ClassicScene extends BaseScene {
     const hy = this.portrait ? 75 : 55;
     new IconButton(this, 75, hy, 'i_pause', this.portrait ? 100 : 90, 'dark').onClick(() => this.openPause()).setDepth(2001);
     const title = this.st.daily ? t('daily') : t(this.st.mode) + (this.st.mode === 'freecell' ? ` · ${t('dealNo', { n: this.gm.seed })}` : this.st.mode === 'spider' ? ` · ${(this.gm as Spider).suits}♠` : '');
-    txt(this, W / 2, hy - (this.portrait ? 22 : 18), title, this.portrait ? 40 : 36, UI.gold).setDepth(2001);
+    const titleT = txt(this, W / 2, hy - (this.portrait ? 22 : 18), title, this.portrait ? 40 : 36, UI.gold).setDepth(2001);
     this.scoreT = txt(this, W / 2 - 220, hy + 26, '', 30, '#ffffff').setDepth(2001);
     this.movesT = txt(this, W / 2, hy + 26, '', 30, '#ffffff').setDepth(2001);
     this.timeT = txt(this, W / 2 + 220, hy + 26, '', 30, '#ffffff').setDepth(2001).setVisible(save.data.settings.timer);
@@ -348,6 +348,10 @@ export class ClassicScene extends BaseScene {
       this.scoreT.setPosition(W - 520, hy);
       this.movesT.setPosition(W - 320, hy);
       this.timeT.setPosition(W - 130, hy);
+      // Landscape: title on the left after the pause button, shrunk to stay clear of the counters.
+      const room = W - 640 - 150;
+      titleT.setOrigin(0, 0.5).setPosition(150, hy);
+      if (titleT.width > room) titleT.setScale(room / titleT.width);
     }
     const stockL = this.layout.get('stock');
     if (stockL) {
