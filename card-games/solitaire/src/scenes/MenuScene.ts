@@ -39,7 +39,7 @@ export class MenuScene extends BaseScene {
     const port = this.portrait;
     const titleY = port ? H * 0.2 : 190;
     goldTitle(this, W / 2, titleY, t('title'), port ? 150 : 120);
-    txt(this, W / 2, titleY + (port ? 110 : 95), t('subtitle'), port ? 60 : 50, '#ffffff').setFontFamily('Georgia, serif');
+    txt(this, W / 2, titleY + (port ? 122 : 100), t('subtitle'), port ? 60 : 50, '#ffffff').setFontFamily('Georgia, serif');
 
     // Main play button
     const playY = port ? H * 0.37 : 420;
@@ -157,9 +157,12 @@ export class MenuScene extends BaseScene {
     if (title.width > maxW) title.setScale(maxW / title.width);
     c.add(title);
     if (w > 400) {
+      // Description sits under the title (top-anchored) and shrinks if it is taller than the room left.
       const d = this.add
-        .text(tx, h * 0.1, t(`${m.id}_d`), { fontFamily: 'Trebuchet MS, Arial', fontSize: '26px', color: '#eef2ff', wordWrap: { width: w / 2 - tx - 20, useAdvancedWrap: true } })
-        .setOrigin(0, 0.5);
+        .text(tx, -h * 0.16 + 34, t(`${m.id}_d`), { fontFamily: 'Trebuchet MS, Arial', fontSize: '25px', color: '#eef2ff', wordWrap: { width: w / 2 - tx - 20, useAdvancedWrap: true } })
+        .setOrigin(0, 0);
+      const room = h / 2 - 14 - d.y;
+      if (d.height > room) d.setScale(room / d.height);
       c.add(d);
     }
     c.add(this.add.image(w / 2 - 40, -h / 2 + 40, `i_${m.icon}`).setDisplaySize(56, 56));

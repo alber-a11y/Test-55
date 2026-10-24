@@ -25,17 +25,28 @@ for (const size of sizesArg.split(',')) {
       const s = window.__game.scene.getScenes(true)[0];
       const items = [];
       const isButton = (o) => o.type === 'Container' && typeof o.onClick === 'function';
+      // Faint decorations (floating suits, alpha < 0.2) are ignored.
       const visible = (o) => {
-        for (let p = o; p; p = p.parentContainer) if (!p.visible || p.alpha < 0.05) return false;
+        for (let p = o; p; p = p.parentContainer) if (!p.visible || p.alpha < 0.2) return false;
         return true;
+      };
+      // Container bounds are unreliable with Graphics children: use the hit size around the world position.
+      const btnBounds = (o) => {
+        const m = o.getWorldTransformMatrix();
+        const w = o.width * Math.abs(m.scaleX);
+        const h = o.height * Math.abs(m.scaleY);
+        return { left: m.tx - w / 2, right: m.tx + w / 2, top: m.ty - h / 2, bottom: m.ty + h / 2, width: w, height: h };
       };
       const walk = (o, inButton) => {
         if (!o.visible) return;
         if (isButton(o)) {
-          if (visible(o) && o.input?.enabled !== false) items.push({ kind: 'btn', name: o.label?.text ?? o.icon?.texture?.key ?? 'btn', b: o.getBounds() });
+          if (visible(o) && o.input?.enabled !== false) items.push({ kind: 'btn', name: o.label?.text ?? o.icon?.texture?.key ?? 'btn', b: btnBounds(o) });
           return; // own label/icon belong to the button
         }
-        if (o.type === 'Text' && !inButton && visible(o) && o.text.trim()) items.push({ kind: 'txt', name: o.text.slice(0, 30).replace(/\n/g, ' '), b: o.getBounds() });
+        if (o.type === 'Text' && !inButton && visible(o) && o.text.trim()) {
+          const r = o.getBounds();
+          items.push({ kind: 'txt', name: o.text.slice(0, 30).replace(/\n/g, ' '), b: { left: r.left, right: r.right, top: r.top, bottom: r.bottom, width: r.width, height: r.height } });
+        }
         if (o.list) for (const c of o.list) walk(c, inButton);
       };
       for (const o of s.children.list) walk(o, false);

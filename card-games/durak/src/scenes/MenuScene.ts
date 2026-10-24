@@ -38,7 +38,7 @@ export class MenuScene extends BaseScene {
     const port = this.portrait;
     const titleY = port ? H * 0.19 : 185;
     goldTitle(this, W / 2, titleY, t('title'), port ? 170 : 130);
-    txt(this, W / 2, titleY + (port ? 115 : 95), t('subtitle'), port ? 60 : 50, '#ffffff').setFontFamily('Georgia, serif');
+    txt(this, W / 2, titleY + (port ? 128 : 100), t('subtitle'), port ? 60 : 50, '#ffffff').setFontFamily('Georgia, serif');
     // Fan of aces as decoration
     const aces: [number, number][] = [[0, 14], [1, 14], [3, 14], [2, 14]];
     if (port)
@@ -117,11 +117,13 @@ export class MenuScene extends BaseScene {
     const title = txt(this, -w / 2 + 170, -h * 0.17, m.title, 38, '#ffffff').setOrigin(0, 0.5);
     if (title.width > w - 190) title.setScale((w - 190) / title.width);
     c.add(title);
-    c.add(
-      this.add
-        .text(-w / 2 + 170, h * 0.15, t(`${m.id}_d`), { fontFamily: 'Trebuchet MS, Arial', fontSize: '24px', color: '#eef2ff', wordWrap: { width: w - 190, useAdvancedWrap: true } })
-        .setOrigin(0, 0.5),
-    );
+    // Description under the title, shrunk to the space left in the card.
+    const d = this.add
+      .text(-w / 2 + 170, -h * 0.17 + 30, t(`${m.id}_d`), { fontFamily: 'Trebuchet MS, Arial', fontSize: '24px', color: '#eef2ff', wordWrap: { width: w - 190, useAdvancedWrap: true } })
+      .setOrigin(0, 0);
+    const room = h / 2 - 12 - d.y;
+    if (d.height > room) d.setScale(room / d.height);
+    c.add(d);
     c.setSize(w, h);
     c.setInteractive({ useHandCursor: true });
     c.on('pointerdown', () => this.tweens.add({ targets: c, scale: 0.96, duration: 60 }));
