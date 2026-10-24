@@ -20,6 +20,8 @@ await sleep(3000);
 await page.evaluate(() => {
   window.__save.data.tutorial = { attack: true, transfer: true, cheat: true };
   window.__save.data.coins = 5000;
+  // Fullscreen ads are covered by the solitaire e2e (same shared code); keep this run deterministic.
+  window.__adConfig.minGamesFinished = 1e9;
 });
 
 /** Plays the current Game scene to the end, the human side driven by the AI. */
