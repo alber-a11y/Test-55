@@ -9,6 +9,7 @@ import { ads } from '@shared/platform/ads';
 import { platform } from '@shared/platform/platform';
 import { BaseScene } from '@shared/ui/base';
 import { openModal } from '@shared/ui/modal';
+import { openPauseMenu, type PauseItem } from '@shared/ui/pauseMenu';
 import { Button, IconButton, toast, txt, UI } from '@shared/ui/widgets';
 import { registerOverlays } from '../art/overlays';
 import type { BoosterId } from '../data/boosters';
@@ -858,29 +859,47 @@ export class TriPeaksScene extends BaseScene {
   private openPause(): void {
     if (this.ended) return;
     pauseHub.set('menu', true);
-    const W = this.W;
-    const m = openModal(this, t('pause'), Math.min(W - 60, 760), 760, () => pauseHub.set('menu', false), { depth: 2600 });
-    const y0 = m.y + 190;
-    const b = (i: number, label: string, color: 'green' | 'blue' | 'dark' | 'red', fn: () => void) =>
-      m.root.add(new Button(this, W / 2, y0 + i * 135, { w: 520, h: 112, color, label, size: 38 }).onClick(fn));
-    b(0, t('continue'), 'green', () => m.close());
-    b(1, t('rules'), 'blue', () => {
-      m.close();
-      this.showRules();
-    });
-    b(2, t('restart'), 'dark', () =>
-      confirm(this, t('quitConfirm'), () => {
-        pauseHub.set('menu', false);
-        this.scene.restart({ ...this.td, state: undefined });
-      }),
-    );
-    b(3, this.td.mode === 'adventure' ? t('map') : t('menu'), 'red', () =>
+    const quit = (key: string, data: object = {}) =>
       confirm(this, t('quitConfirm'), () => {
         pauseHub.set('menu', false);
         if (this.td.mode !== 'blitz') this.recordQuit();
-        this.go(this.td.mode === 'adventure' ? 'Map' : this.td.mode === 'daily' ? 'Daily' : 'Menu', {}, 'quit_game');
-      }),
+        this.go(key, data, 'quit_game');
+      });
+    // Shop / settings keep the level: they return here with the current state.
+    const away = (key: string) => {
+      pauseHub.set('menu', false);
+      this.go(key, { from: 'TriPeaks', back: { ...this.td, state: this.st } });
+    };
+    const items: PauseItem[] = [
+      { label: t('continue'), icon: 'play', color: 'green', fn: () => m.close() },
+      { label: t('mainMenu'), icon: 'home', color: 'blue', fn: () => quit('Menu') },
+    ];
+    if (this.td.mode === 'adventure') items.push({ label: t('levelsMap'), icon: 'map', color: 'blue', fn: () => quit('Map') });
+    if (this.td.mode === 'daily') items.push({ label: t('calendar'), icon: 'calendar', color: 'blue', fn: () => quit('Daily') });
+    items.push(
+      { label: t('shop'), icon: 'cart', color: 'gold', fn: () => away('Shop') },
+      { label: t('settings'), icon: 'gear', color: 'dark', fn: () => away('Settings') },
+      {
+        label: t('rules'),
+        icon: 'rules',
+        color: 'dark',
+        fn: () => {
+          m.close();
+          this.showRules();
+        },
+      },
+      {
+        label: t('restart'),
+        icon: 'refresh',
+        color: 'red',
+        fn: () =>
+          confirm(this, t('quitConfirm'), () => {
+            pauseHub.set('menu', false);
+            this.scene.restart({ ...this.td, state: undefined });
+          }),
+      },
     );
+    const m = openPauseMenu(this, t('pause'), items, () => pauseHub.set('menu', false));
   }
 
   private recordQuit(): void {

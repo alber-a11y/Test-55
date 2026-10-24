@@ -31,6 +31,8 @@ export interface DResultData {
   puzzle?: { n: number };
   ctx?: any;
   lastCardTrump?: boolean;
+  /** Quit from the pause menu: record the loss and go straight here. */
+  autoNext?: { key: string; data: object };
   recorded?: Recorded;
 }
 
@@ -65,6 +67,13 @@ export class ResultScene extends BaseScene {
     menuBackground(this, data.loc);
     if (!data.recorded) data.recorded = this.record();
     const rec = data.recorded;
+    if (data.autoNext) {
+      const to = data.autoNext;
+      data.autoNext = undefined;
+      this.claimed = true;
+      void this.go(to.key, to.data, 'quit_game');
+      return;
+    }
     const W = this.W;
     const H = this.H;
     const won = data.won;

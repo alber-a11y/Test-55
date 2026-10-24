@@ -9,6 +9,7 @@ import { ads } from '@shared/platform/ads';
 import { platform } from '@shared/platform/platform';
 import { BaseScene } from '@shared/ui/base';
 import { openModal } from '@shared/ui/modal';
+import { openPauseMenu, type PauseItem } from '@shared/ui/pauseMenu';
 import { Button, IconButton, toast, txt, UI } from '@shared/ui/widgets';
 import { faceTex, PLAYER_FACES } from '../art/avatars';
 import type { Emotion } from '../art/faces';
@@ -1058,25 +1059,48 @@ export class GameScene extends BaseScene {
     if (this.ended) return;
     pauseHub.set('menu', true);
     const W = this.W;
-    const m = openModal(this, t('pause'), Math.min(W - 60, 760), 640, () => pauseHub.set('menu', false), { depth: 2600 });
-    const y0 = m.y + 190;
-    const b = (i: number, label: string, color: 'green' | 'blue' | 'red', fn: () => void) => m.root.add(new Button(this, W / 2, y0 + i * 135, { w: 520, h: 112, color, label, size: 38 }).onClick(fn));
-    b(0, t('continue'), 'green', () => m.close());
-    b(1, t('rules'), 'blue', () => {
-      m.close();
-      pauseHub.set('menu', true);
-      const r = openModal(this, t('rules'), Math.min(W - 60, 940), Math.min(this.H - 200, 1300), () => pauseHub.set('menu', false), { depth: 2600 });
-      const extra = [this.d.rules.transfer ? t('r_transfer_t') : '', this.d.rules.teams ? t('r_teams_t') : '', this.d.rules.cheat ? t('r_cheat_t') : ''].filter(Boolean).join('\n\n');
-      r.root.add(txt(this, W / 2, r.y + 120, t('r_main') + (extra ? '\n\n' + extra : ''), 28, '#ffffff', { wordWrap: { width: r.w - 80 }, align: 'left', strokeThickness: 0 }).setOrigin(0.5, 0));
-    });
-    b(2, this.d.mode === 'career' ? t('map') : t('menu'), 'red', () =>
+    // Leaving the table mid-deal counts as a loss (confirmed first).
+    const quit = (to?: { key: string; data: object }) =>
       confirm(this, t('quitConfirm'), () => {
         pauseHub.set('menu', false);
         this.ended = true;
         this.botTimer?.remove();
-        this.go('Result', { mode: this.d.mode, won: false, draw: false, fool: true, pogony: false, quit: true, tableIdx: this.d.tableIdx, match: this.d.match, rules: this.d.rules, opponents: this.d.opponents, loc: this.d.loc, puzzle: this.d.puzzle, ctx: this.d.ctx, shield: this.st.shield });
-      }),
+        const res = { mode: this.d.mode, won: false, draw: false, fool: true, pogony: false, quit: true, tableIdx: this.d.tableIdx, match: this.d.match, rules: this.d.rules, opponents: this.d.opponents, loc: this.d.loc, puzzle: this.d.puzzle, ctx: this.d.ctx, shield: this.st.shield };
+        if (to) {
+          // Record the loss silently, then go straight to the chosen screen.
+          this.go('Result', { ...res, autoNext: to });
+        } else this.go('Result', res);
+      });
+    // Shop / settings keep the deal: they return here with the current state.
+    const away = (key: string) => {
+      pauseHub.set('menu', false);
+      this.botTimer?.remove();
+      this.go(key, { from: 'Game', back: { ...this.d, state: this.st } });
+    };
+    const items: PauseItem[] = [
+      { label: t('continue'), icon: 'play', color: 'green', fn: () => m.close() },
+      { label: t('mainMenu'), icon: 'home', color: 'blue', fn: () => quit({ key: 'Menu', data: {} }) },
+    ];
+    if (this.d.mode === 'career') items.push({ label: t('career'), icon: 'map', color: 'blue', fn: () => quit({ key: 'Career', data: {} }) });
+    if (this.d.mode === 'tournament') items.push({ label: t('bracket'), icon: 'podium', color: 'blue', fn: () => quit() });
+    if (this.d.mode === 'puzzle') items.push({ label: t('puzzleList'), icon: 'hint', color: 'blue', fn: () => quit({ key: 'Puzzles', data: {} }) });
+    items.push(
+      { label: t('shop'), icon: 'cart', color: 'gold', fn: () => away('Shop') },
+      { label: t('settings'), icon: 'gear', color: 'dark', fn: () => away('Settings') },
+      {
+        label: t('rules'),
+        icon: 'rules',
+        color: 'dark',
+        fn: () => {
+          m.close();
+          pauseHub.set('menu', true);
+          const r = openModal(this, t('rules'), Math.min(W - 60, 940), Math.min(this.H - 200, 1300), () => pauseHub.set('menu', false), { depth: 2600 });
+          const extra = [this.d.rules.transfer ? t('r_transfer_t') : '', this.d.rules.teams ? t('r_teams_t') : '', this.d.rules.cheat ? t('r_cheat_t') : ''].filter(Boolean).join('\n\n');
+          r.root.add(txt(this, W / 2, r.y + 120, t('r_main') + (extra ? '\n\n' + extra : ''), 28, '#ffffff', { wordWrap: { width: r.w - 80 }, align: 'left', strokeThickness: 0 }).setOrigin(0.5, 0));
+        },
+      },
     );
+    const m = openPauseMenu(this, t('pause'), items, () => pauseHub.set('menu', false));
   }
 
   private tutorial(): void {

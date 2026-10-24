@@ -1,6 +1,9 @@
 import { registerStrings } from '@shared/core/i18n';
 
 const ru: Record<string, string> = {
+  mainMenu: 'Главное меню',
+  bracket: 'Турнирная сетка',
+  puzzleList: 'Список задач',
   title: 'ДУРАК',
   subtitle: 'Король стола',
   play: 'ИГРАТЬ',
@@ -278,6 +281,9 @@ const ru: Record<string, string> = {
 };
 
 const en: Record<string, string> = {
+  mainMenu: 'Main menu',
+  bracket: 'Bracket',
+  puzzleList: 'Puzzle list',
   title: 'DURAK',
   subtitle: 'King of the Table',
   play: 'PLAY',

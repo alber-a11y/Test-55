@@ -1,6 +1,9 @@
 import { registerStrings } from '@shared/core/i18n';
 
 const ru: Record<string, string> = {
+  mainMenu: 'Главное меню',
+  levelsMap: 'Карта уровней',
+  calendar: 'Календарь',
   title: 'ПАСЬЯНС',
   subtitle: 'Кругосветка',
   loading: 'Тасуем колоду…',
@@ -239,6 +242,9 @@ const ru: Record<string, string> = {
 };
 
 const en: Record<string, string> = {
+  mainMenu: 'Main menu',
+  levelsMap: 'Level map',
+  calendar: 'Calendar',
   title: 'SOLITAIRE',
   subtitle: 'World Tour',
   loading: 'Shuffling…',

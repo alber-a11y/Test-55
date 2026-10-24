@@ -8,6 +8,7 @@ import { ads } from '@shared/platform/ads';
 import { platform } from '@shared/platform/platform';
 import { BaseScene } from '@shared/ui/base';
 import { openModal } from '@shared/ui/modal';
+import { openPauseMenu, type PauseItem } from '@shared/ui/pauseMenu';
 import { Button, IconButton, toast, txt, UI } from '@shared/ui/widgets';
 import { findSolvableKlondike, Klondike, type KlondikeSave } from '../logic/klondike';
 import { FreeCell, type FreeCellSave } from '../logic/freecell';
@@ -760,29 +761,44 @@ export class ClassicScene extends BaseScene {
   private openPause(): void {
     if (this.ended) return;
     pauseHub.set('menu', true);
-    const W = this.W;
-    const m = openModal(this, t('pause'), Math.min(W - 60, 760), 760, () => pauseHub.set('menu', false), { depth: 2600 });
-    const y0 = m.y + 190;
-    const b = (i: number, label: string, color: 'green' | 'blue' | 'dark' | 'red', fn: () => void) =>
-      m.root.add(new Button(this, W / 2, y0 + i * 135, { w: 520, h: 112, color, label, size: 38 }).onClick(fn));
-    b(0, t('continue'), 'green', () => m.close());
-    b(1, t('rules'), 'blue', () => {
-      m.close();
-      pauseHub.set('menu', true);
-      const r = openModal(this, t('rules'), Math.min(W - 60, 900), 900, () => pauseHub.set('menu', false), { depth: 2600 });
-      r.root.add(txt(this, W / 2, r.y + r.h / 2 + 20, t(`r_${this.st.mode}`), 34, '#ffffff', { wordWrap: { width: r.w - 90 }, align: 'left', strokeThickness: 0 }));
-    });
-    b(2, t('newDeal'), 'dark', () => {
-      m.close();
-      this.newDealConfirm();
-    });
-    b(3, t('menu'), 'red', () => {
-      // The deal stays saved and can be resumed from the menu.
+    // The deal is saved on every move, so leaving never loses it.
+    const leave = (key: string, data: object = {}, ad?: string) => {
       pauseHub.set('menu', false);
       this.persist();
       this.ended = true;
-      this.go(this.st.daily ? 'Daily' : 'Menu', {}, 'quit_game');
-    });
+      this.go(key, data, ad);
+    };
+    const W = this.W;
+    const items: PauseItem[] = [
+      { label: t('continue'), icon: 'play', color: 'green', fn: () => m.close() },
+      { label: t('mainMenu'), icon: 'home', color: 'blue', fn: () => leave('Menu', {}, 'quit_game') },
+    ];
+    if (this.st.daily) items.push({ label: t('calendar'), icon: 'calendar', color: 'blue', fn: () => leave('Daily', {}, 'quit_game') });
+    items.push(
+      { label: t('shop'), icon: 'cart', color: 'gold', fn: () => leave('Shop', { from: 'Classic', back: { ...this.sceneData, state: this.st } }) },
+      { label: t('settings'), icon: 'gear', color: 'dark', fn: () => leave('Settings', { from: 'Classic', back: { ...this.sceneData, state: this.st } }) },
+      {
+        label: t('rules'),
+        icon: 'rules',
+        color: 'dark',
+        fn: () => {
+          m.close();
+          pauseHub.set('menu', true);
+          const r = openModal(this, t('rules'), Math.min(W - 60, 900), 900, () => pauseHub.set('menu', false), { depth: 2600 });
+          r.root.add(txt(this, W / 2, r.y + r.h / 2 + 20, t(`r_${this.st.mode}`), 34, '#ffffff', { wordWrap: { width: r.w - 90 }, align: 'left', strokeThickness: 0 }));
+        },
+      },
+      {
+        label: t('newDeal'),
+        icon: 'refresh',
+        color: 'red',
+        fn: () => {
+          m.close();
+          this.newDealConfirm();
+        },
+      },
+    );
+    const m = openPauseMenu(this, t('pause'), items, () => pauseHub.set('menu', false));
   }
 
   update(time: number): void {

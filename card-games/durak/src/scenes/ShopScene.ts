@@ -33,10 +33,11 @@ export class ShopScene extends BaseScene {
     super('Shop');
   }
 
-  create(data: { tab?: Tab; from?: string; scroll?: number }): void {
+  create(data: { tab?: Tab; from?: string; scroll?: number; back?: unknown }): void {
     this.tab = data.tab ?? 'back';
     menuBackground(this);
-    this.pill = topBar(this, t('shop'), () => this.go(data.from ?? 'Menu', {}, 'shop_back'));
+    // Opened from a paused game: `back` holds that game's data so it resumes where it was (no ad on the way back).
+    this.pill = topBar(this, t('shop'), () => this.go(data.from ?? 'Menu', data.back ?? {}, data.back ? undefined : 'shop_back'));
     const W = this.W;
     // Tabs
     const tw = Math.min(200, (W - 40) / TABS.length - 10);

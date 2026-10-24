@@ -11,13 +11,13 @@ export class SettingsScene extends BaseScene {
     super('Settings');
   }
 
-  create(data: { from?: string }): void {
+  create(data: { from?: string; back?: unknown }): void {
     const W = this.W;
     const H = this.H;
     menuBackground(this);
     const back = () => {
       save.flush();
-      this.go(data.from ?? 'Menu', {}, 'settings_back');
+      this.go(data.from ?? 'Menu', data.back ?? {}, data.back ? undefined : 'settings_back');
     };
     topBar(this, t('settings'), back, { coins: false });
     const s = save.data.settings;
