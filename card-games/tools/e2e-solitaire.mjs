@@ -25,7 +25,7 @@ const toPage = async (x, y) =>
     return [r.left + (x / g.scale.width) * r.width, r.top + (y / g.scale.height) * r.height];
   }, [x, y]);
 const active = () => page.evaluate(() => window.__game.scene.getScenes(true).map((s) => s.scene.key).join(','));
-const start = (key, data) => page.evaluate(([k, d]) => window.__game.scene.getScenes(true)[0].scene.start(k, d), [key, data]);
+const start = (key, data) => page.evaluate(([k, d]) => { window.__game.scene.getScenes(true)[0].scene.start(k, d); }, [key, data]);
 
 await page.evaluate(() => Object.assign(window.__save.data.tutorial, { kl: true, tp1: true, ice: true, lock: true, gold: true, bomb: true }));
 

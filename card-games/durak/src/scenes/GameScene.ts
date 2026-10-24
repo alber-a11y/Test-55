@@ -359,8 +359,9 @@ export class GameScene extends BaseScene {
       if (Math.abs(v.cw - w) > 0.5) v.setCardSize(w, w * 1.4);
       if (v.faceUp !== up) v.setFaceUp(up, animate);
       if (animate) {
-        v.glide(x, y, dur);
-        this.tweens.add({ targets: v, angle, duration: dur });
+        // Only tween cards that actually move (dozens of idle cards stay put).
+        if (Math.abs(v.x - x) > 0.5 || Math.abs(v.y - y) > 0.5) v.glide(x, y, dur);
+        if (Math.abs(v.angle - angle) > 0.5) this.tweens.add({ targets: v, angle, duration: dur });
       } else {
         v.stopGlide();
         v.setPosition(x, y).setAngle(angle);
@@ -437,25 +438,27 @@ export class GameScene extends BaseScene {
     const n = hand.length;
     const W = this.W;
     const maxW = W - (this.portrait ? 60 : 500);
-    const w = this.hcw;
+    // Big hands shrink a little so every index stays readable.
+    const w = this.hcw * Math.max(0.68, Math.min(1, 12 / Math.max(1, n)));
     const step = n > 1 ? Math.min(w * 0.8, (maxW - w) / (n - 1)) : 0;
     const x0 = W / 2 - (step * (n - 1)) / 2;
-    const y0 = this.seats[0].hy;
+    const y0 = this.seats[0].hy + (this.hcw - w) * 0.7;
+    const half = Math.max(1, (n - 1) / 2);
     hand.forEach((c, i) => {
       const v = this.views.get(c.id);
       if (!v) return;
       const off = i - (n - 1) / 2;
       const sel = this.selected === c.id;
       const x = x0 + i * step;
-      const y = y0 + Math.abs(off) * Math.abs(off) * 2.2 - (sel ? 50 : 0);
+      const y = y0 + (off / half) * (off / half) * 34 - (sel ? 50 : 0);
       v.setVisible(true);
       v.setDepth(1000 + i);
       if (Math.abs(v.cw - w) > 0.5) v.setCardSize(w, w * 1.4);
       if (!v.faceUp) v.setFaceUp(true, animate);
-      const ang = off * Math.min(3, 30 / Math.max(1, n));
+      const ang = (off / half) * Math.min(10, n * 1.2);
       if (animate) {
-        v.glide(x, y, 240);
-        this.tweens.add({ targets: v, angle: ang, duration: 240 });
+        if (Math.abs(v.x - x) > 0.5 || Math.abs(v.y - y) > 0.5) v.glide(x, y, 240);
+        if (Math.abs(v.angle - ang) > 0.5) this.tweens.add({ targets: v, angle: ang, duration: 240 });
       } else {
         v.stopGlide();
         v.setPosition(x, y).setAngle(ang);

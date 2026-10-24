@@ -11,8 +11,9 @@ page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 const sleep = (ms) => page.waitForTimeout(ms);
 const results = [];
 const check = (name, ok, extra = '') => results.push(`${ok ? 'PASS' : 'FAIL'} ${name} ${extra}`);
+const waitScene = (key, ms = 90000) => page.waitForFunction((k) => window.__game.scene.getScenes(true).some((s) => s.scene.key === k), key, { timeout: ms, polling: 500 }).then(() => true, () => false);
 const active = () => page.evaluate(() => window.__game.scene.getScenes(true).map((s) => s.scene.key).join(','));
-const start = (key, data) => page.evaluate(([k, d]) => window.__game.scene.getScenes(true)[0].scene.start(k, d), [key, data]);
+const start = (key, data) => page.evaluate(([k, d]) => { window.__game.scene.getScenes(true)[0].scene.start(k, d); }, [key, data]);
 
 await page.goto(URL);
 await sleep(3000);
@@ -57,6 +58,7 @@ const playOut = (mode) =>
       }
       if (steps % 25 === 0) await new Promise((r) => setTimeout(r, 0));
     }
+    if (s.g.over && !s.ended) s.onOver();
     return { over: s.g.over, loser: s.g.loser, steps };
   }, mode);
 
@@ -76,8 +78,8 @@ check('career game started', (await active()).includes('Game'), await active());
 await page.screenshot({ path: `${OUT}_table.png` });
 let r = await playOut('normal');
 check('career deal finished', r.over, JSON.stringify(r));
-await sleep(4500);
-check('career → Result', (await active()).includes('Result'), await active());
+check('career → Result', await waitScene('Result'), await active());
+await sleep(1500);
 await page.screenshot({ path: `${OUT}_result.png` });
 
 // ---- Quick game: 3 players, transfer
@@ -92,8 +94,7 @@ await page.evaluate(() => {
 await sleep(1500);
 r = await playOut('normal');
 check('quick 3p transfer finished', r.over, JSON.stringify(r));
-await sleep(4500);
-check('quick → Result', (await active()).includes('Result'));
+check('quick → Result', await waitScene('Result'));
 
 // ---- Cheat game with catches
 await page.evaluate(() => Object.assign(window.__save.data.settings.quick, { players: 2, transfer: false, cheat: true }));
@@ -103,7 +104,7 @@ await page.evaluate(() => window.__game.scene.getScene('QuickSetup').children.li
 await sleep(1500);
 r = await playOut('cheat');
 check('cheat game finished', r.over, JSON.stringify(r));
-await sleep(4500);
+await waitScene('Result');
 
 // ---- 4 players teams
 await page.evaluate(() => Object.assign(window.__save.data.settings.quick, { players: 4, teams: true, cheat: false }));
@@ -114,7 +115,7 @@ await sleep(1500);
 await page.screenshot({ path: `${OUT}_teams.png` });
 r = await playOut('normal');
 check('teams game finished', r.over, JSON.stringify(r));
-await sleep(4500);
+await waitScene('Result');
 
 // ---- Puzzle 1 solved by perfect play
 await start('Puzzles', {});
@@ -124,7 +125,7 @@ await sleep(2500);
 await page.screenshot({ path: `${OUT}_puzzle.png` });
 r = await playOut('puzzle');
 check('puzzle won', r.over && r.loser === 1, JSON.stringify(r));
-await sleep(4500);
+await waitScene('Result');
 const solved = await page.evaluate(() => window.__save.data.puzzles.solved);
 check('puzzle recorded', solved >= 1, String(solved));
 
@@ -138,13 +139,20 @@ await page.evaluate(() => window.__game.scene.getScene('Tournament').children.li
 await sleep(1500);
 r = await playOut('normal');
 check('tournament match finished', r.over, JSON.stringify(r));
-await sleep(4500);
+await waitScene('Result');
+await sleep(1000);
 await page.evaluate(() => {
   const s = window.__game.scene.getScene('Result');
   s.claim(1, s.nextTarget());
 });
 await sleep(1500);
-check('back to bracket', (await active()).includes('Tournament'), await active());
+if ((await active()).match(/LevelUp|LeagueUp/)) {
+  await page.evaluate(() => {
+    const s = window.__game.scene.getScenes(true)[0];
+    s.children.list.find((o) => o.label && /ЗАБРАТЬ/.test(o.label.text))?.emit('pointerup', { x: 0, y: 0 });
+  });
+}
+check('back to bracket', await waitScene('Tournament'), await active());
 const tour = await page.evaluate(() => window.__save.data.tour);
 check('tournament advanced', tour && tour.round === 1, JSON.stringify({ round: tour?.round, out: tour?.out }));
 
