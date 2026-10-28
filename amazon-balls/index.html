@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#0f4a2a" />
+  <title>Шары Амазонки</title>
+  <style>
+    html, body { margin: 0; padding: 0; width: 100%; height: 100%; overflow: hidden; background: #0b2a1a;
+      touch-action: none; -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+      -webkit-tap-highlight-color: transparent; overscroll-behavior: none; }
+    #game { position: fixed; inset: 0; }
+    #game canvas { display: block; touch-action: none; outline: none; }
+    #boot-loader { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+      flex-direction: column; color: #fff; font: 900 34px 'Trebuchet MS', Arial, sans-serif; text-align: center;
+      background: radial-gradient(circle at 50% 40%, #2fae5a, #0b2a1a 75%); z-index: 5; text-shadow: 0 4px 0 #2a1640; }
+    #boot-loader small { display: block; font-size: 46px; color: #ffd23a; }
+    #boot-loader .balls { display: flex; gap: 10px; margin-bottom: 18px; }
+    #boot-loader .balls i { width: 26px; height: 26px; border-radius: 50%; display: block; animation: bob 0.9s ease-in-out infinite;
+      box-shadow: inset -4px -5px 0 rgba(0,0,0,.25), inset 4px 4px 0 rgba(255,255,255,.35); }
+    #boot-loader .balls i:nth-child(2) { animation-delay: .15s } #boot-loader .balls i:nth-child(3) { animation-delay: .3s }
+    #boot-loader .balls i:nth-child(4) { animation-delay: .45s }
+    @keyframes bob { 50% { transform: translateY(-14px) } }
+    #boot-loader .bar { width: 260px; height: 16px; border-radius: 9px; background: #0008; margin-top: 22px; overflow: hidden; border: 3px solid #2a1640; }
+    #boot-loader .fill { height: 100%; width: 0; background: linear-gradient(#ffe066, #ff9a12); transition: width .2s; }
+  </style>
+</head>
+<body>
+  <div id="game"></div>
+  <div id="boot-loader">
+    <div class="balls"><i style="background:#ff2d3d"></i><i style="background:#ffd60a"></i><i style="background:#2fcb3a"></i><i style="background:#2d55ff"></i></div>
+    <div>ШАРЫ<small>АМАЗОНКИ</small></div>
+    <div class="bar"><div class="fill" id="boot-fill"></div></div>
+  </div>
+  <script type="module" src="/src/main.ts"></script>
+</body>
+</html>
