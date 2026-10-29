@@ -1,5 +1,5 @@
 // End-to-end checks of «Тысяча Экспресс» in a real browser (stub platform).
-// Usage: node tools/e2e-thousand.mjs [url] [outDir] [--shots]
+// Usage: node tools/e2e-thousand.mjs [url] [outDir] [--shots] [--shots-only] [--port|--land]
 // Plays a route station, a blitz match, an etude and the daily deal (the player's side driven by the AI),
 // and with --shots captures every screen in portrait and landscape.
 import { chromium } from 'playwright';
@@ -7,7 +7,9 @@ import fs from 'node:fs';
 
 const URL = process.argv[2] ?? 'http://localhost:5184/?debug&lang=ru';
 const OUT = process.argv[3] ?? '/tmp/e2e-thousand';
-const SHOTS = process.argv.includes('--shots');
+const SHOTS_ONLY = process.argv.includes('--shots-only');
+const SHOTS = SHOTS_ONLY || process.argv.includes('--shots');
+const ORIENT = process.argv.includes('--land') ? ['l'] : process.argv.includes('--port') ? ['p'] : ['p', 'l'];
 fs.mkdirSync(OUT, { recursive: true });
 const browser = await chromium.launch({ executablePath: '/opt/pw-browsers/chromium-1243/chrome-linux64/chrome', args: ['--use-gl=swiftshader', '--enable-webgl', '--ignore-gpu-blocklist'] });
 const page = await browser.newPage({ viewport: { width: 540, height: 1100 } });
@@ -16,7 +18,11 @@ page.on('pageerror', (e) => errors.push(String(e.stack || e)));
 page.on('console', (m) => m.type() === 'error' && errors.push(m.text()));
 const sleep = (ms) => page.waitForTimeout(ms);
 const results = [];
-const check = (name, ok, extra = '') => results.push(`${ok ? 'PASS' : 'FAIL'} ${name} ${extra}`);
+const check = (name, ok, extra = '') => {
+  const line = `${ok ? 'PASS' : 'FAIL'} ${name} ${extra}`;
+  results.push(line);
+  console.log(line);
+};
 const waitScene = (key, ms = 60000) => page.waitForFunction((k) => window.__game.scene.getScenes(true).some((s) => s.scene.key === k), key, { timeout: ms, polling: 300 }).then(() => true, () => false);
 const start = (key, data) => page.evaluate(([k, d]) => window.__game.scene.getScenes(true)[0].scene.start(k, d), [key, data]);
 
@@ -75,6 +81,7 @@ const playOut = (maxMs = 240000) =>
 
 const shot = (name) => page.screenshot({ path: `${OUT}/${name}.png` });
 
+if (!SHOTS_ONLY) {
 // 1. Route station 1
 await start('Game', await page.evaluate(async () => {
   const r = await import('/src/data/route.ts');
@@ -138,6 +145,8 @@ if (dailyStarted) {
   check('daily score saved', dd === 1);
 }
 
+}
+
 // 5. Every screen in both orientations
 if (SHOTS) {
   const screens = [
@@ -169,7 +178,7 @@ if (SHOTS) {
   for (const [w, h, tag] of [
     [540, 1100, 'p'],
     [1280, 720, 'l'],
-  ]) {
+  ].filter((o) => ORIENT.includes(o[2]))) {
     await page.setViewportSize({ width: w, height: h });
     await sleep(1500);
     for (const [key, data] of screens) {
@@ -190,7 +199,6 @@ if (SHOTS) {
   }
 }
 
-console.log(results.join('\n'));
 console.log(errors.length ? 'ERRORS:\n' + errors.join('\n') : 'no page errors');
 await browser.close();
 process.exit(results.some((x) => x.startsWith('FAIL')) || errors.length ? 1 : 0);

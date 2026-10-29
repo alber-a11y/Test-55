@@ -121,11 +121,16 @@ export class MapScene extends BaseScene {
     const dim = this.add.rectangle(0, yt, W, yb - yt, 0x0b1026, 0.18).setOrigin(0).setDepth(-18);
     objs.push(dim);
     const lap = Math.floor(li / WORLDS.length);
-    const banner = this.add.container(W / 2, yb - 120).setDepth(-5);
+    // The carriage name sits beside the track, on the side away from the path.
+    const mid = (this.x(li * STATIONS) + this.x(li * STATIONS - 1)) / 2;
+    const bw = Math.min(460, W * 0.42);
+    const banner = this.add.container(mid > W / 2 ? bw / 2 + 20 : W - bw / 2 - 20, yb).setDepth(20);
     const bg = this.add.graphics();
-    bg.fillStyle(UI.inkN, 0.8).fillRoundedRect(-300, -50, 600, 100, 20);
-    bg.lineStyle(4, 0xc9a55c, 1).strokeRoundedRect(-292, -42, 584, 84, 16);
-    banner.add([bg, txt(this, 0, 0, (getLang() === 'en' ? wd.en : wd.ru) + (lap ? ` ${'★'.repeat(Math.min(lap, 5))}` : ''), 46, wd.accent)]);
+    bg.fillStyle(UI.inkN, 0.85).fillRoundedRect(-bw / 2, -40, bw, 80, 18);
+    bg.lineStyle(4, 0xc9a55c, 1).strokeRoundedRect(-bw / 2 + 7, -33, bw - 14, 66, 14);
+    const bt = txt(this, 0, 0, (getLang() === 'en' ? wd.en : wd.ru) + (lap ? ` ${'★'.repeat(Math.min(lap, 5))}` : ''), 38, wd.accent);
+    if (bt.width > bw - 30) bt.setScale((bw - 30) / bt.width);
+    banner.add([bg, bt]);
     objs.push(banner);
     return objs;
   }
