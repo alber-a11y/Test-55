@@ -10,7 +10,10 @@
     "dev:durak": "vite --config durak/vite.config.ts",
     "build:durak": "tsc --noEmit -p durak && vite build --config durak/vite.config.ts",
     "preview:durak": "vite preview --config durak/vite.config.ts",
-    "typecheck": "tsc --noEmit -p solitaire",
+    "dev:thousand": "vite --config thousand/vite.config.ts",
+    "build:thousand": "tsc --noEmit -p thousand && vite build --config thousand/vite.config.ts",
+    "preview:thousand": "vite preview --config thousand/vite.config.ts",
+    "typecheck": "tsc --noEmit -p solitaire && tsc --noEmit -p durak && tsc --noEmit -p thousand",
     "test": "vitest run"
   },
   "dependencies": {
