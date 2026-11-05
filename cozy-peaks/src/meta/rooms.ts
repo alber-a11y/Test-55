@@ -101,6 +101,48 @@ export const ROOMS: RoomDef[] = [
       { id: 'plant', name: v('Монстера', 'Monstera'), at: { x: 520, y: 760 }, coins: 1200 },
     ],
   },
+  {
+    id: 'kitchen',
+    name: v('Кухня', 'Kitchen'),
+    makeover: v('Преображение кухни', 'Kitchen Makeover'),
+    stages: [3, 6, 8],
+    tasks: [
+      { id: 'walls', name: v('Стены', 'Walls'), cost: 3, at: { x: 200, y: 150 }, variants: [v('Мятная плитка', 'Mint tiles'), v('Персиковая', 'Peach tiles'), v('Голубые', 'Blue'), v('Розы', 'Roses')] },
+      { id: 'fridge', name: v('Холодильник', 'Fridge'), cost: 3, at: { x: 190, y: 330 }, variants: [v('Белый', 'White'), v('Голубой', 'Sky'), v('Розовый', 'Pink'), v('Золотой', 'Golden')] },
+      { id: 'cabinets', name: v('Шкафчики', 'Cabinets'), cost: 4, at: { x: 470, y: 210 }, variants: [v('Молочные', 'Cream'), v('Шалфей', 'Sage'), v('Дерево', 'Wood'), v('Индиго', 'Indigo')] },
+      { id: 'stove', name: v('Плита', 'Stove'), cost: 4, at: { x: 1020, y: 250 }, variants: [v('Классика', 'Classic'), v('Красная', 'Red'), v('Сталь', 'Steel'), v('Королевская', 'Royal')] },
+      { id: 'shelf', name: v('Полка специй', 'Spice shelf'), cost: 4, at: { x: 670, y: 320 }, variants: [v('Дуб', 'Oak'), v('Белая', 'White'), v('Тёмная', 'Dark'), v('Золотая', 'Golden')] },
+      { id: 'curtains', name: v('Занавески', 'Curtains'), cost: 5, at: { x: 1380, y: 260 }, variants: [v('Горошек', 'Polka dots'), v('Лён', 'Linen'), v('Полоска', 'Stripes'), v('Солнечные', 'Sunny')] },
+      { id: 'pendant', name: v('Светильники', 'Pendant lamps'), cost: 5, at: { x: 900, y: 430 }, variants: [v('Лофт', 'Loft'), v('Белые', 'White'), v('Плетёные', 'Woven'), v('Хрусталь', 'Crystal')] },
+      { id: 'table', name: v('Обеденный стол', 'Dining table'), cost: 6, at: { x: 720, y: 720 }, variants: [v('Орех', 'Walnut'), v('Прованс', 'Provence'), v('Дуб', 'Oak'), v('Банкет', 'Banquet')] },
+    ],
+    bonus: [
+      { id: 'teapot', name: v('Чайник', 'Teapot'), at: { x: 1200, y: 380 }, ads: 2 },
+      { id: 'herbs', name: v('Травы на окне', 'Window herbs'), at: { x: 1380, y: 540 }, ads: 3 },
+      { id: 'cake', name: v('Торт', 'Cake'), at: { x: 990, y: 640 }, coins: 1600 },
+    ],
+  },
+  {
+    id: 'veranda',
+    name: v('Веранда', 'Veranda'),
+    makeover: v('Преображение веранды', 'Veranda Makeover'),
+    stages: [3, 6, 8],
+    tasks: [
+      { id: 'deck', name: v('Пол', 'Deck'), cost: 3, at: { x: 800, y: 920 }, variants: [v('Медовый', 'Honey'), v('Серый', 'Grey'), v('Белый', 'White'), v('Терракота', 'Terracotta')] },
+      { id: 'railing', name: v('Перила', 'Railing'), cost: 3, at: { x: 640, y: 560 }, variants: [v('Белые', 'White'), v('Тёмные', 'Dark'), v('Кованые', 'Iron'), v('Резные', 'Carved')] },
+      { id: 'armchair', name: v('Кресло', 'Armchair'), cost: 4, at: { x: 420, y: 470 }, variants: [v('Плетёное', 'Wicker'), v('Белое', 'White'), v('Оливковое', 'Olive'), v('Бархат', 'Velvet')] },
+      { id: 'table', name: v('Чайный столик', 'Tea table'), cost: 4, at: { x: 760, y: 700 }, variants: [v('Дерево', 'Wood'), v('Белый', 'White'), v('Тёмный', 'Dark'), v('Стекло', 'Glass')] },
+      { id: 'awning', name: v('Навес', 'Awning'), cost: 5, at: { x: 800, y: 140 }, variants: [v('Красный', 'Red'), v('Синий', 'Blue'), v('Зелёный', 'Green'), v('Королевский', 'Royal')] },
+      { id: 'swing', name: v('Качели', 'Porch swing'), cost: 5, at: { x: 1180, y: 330 }, variants: [v('Дуб', 'Oak'), v('Белые', 'White'), v('Орех', 'Walnut'), v('Золото', 'Golden')] },
+      { id: 'lanterns', name: v('Фонарики', 'Lanterns'), cost: 6, at: { x: 360, y: 250 }, variants: [v('Тёплые', 'Warm'), v('Оранжевые', 'Amber'), v('Бумажные', 'Paper'), v('Лунные', 'Moonlight')] },
+      { id: 'plants', name: v('Цветы в кадках', 'Potted flowers'), cost: 6, at: { x: 1400, y: 640 }, variants: [v('Розовые', 'Pink'), v('Лаванда', 'Lavender'), v('Подсолнухи', 'Sunflowers'), v('Розы', 'Roses')] },
+    ],
+    bonus: [
+      { id: 'verandaCat', name: v('Чёрный кот', 'Black cat'), at: { x: 430, y: 610 }, ads: 2 },
+      { id: 'feeder', name: v('Кормушка', 'Bird feeder'), at: { x: 1480, y: 200 }, ads: 3 },
+      { id: 'lemonade', name: v('Лимонад', 'Lemonade'), at: { x: 900, y: 640 }, coins: 1400 },
+    ],
+  },
 ];
 
 export const roomById = (id: string): RoomDef => ROOMS.find((r) => r.id === id) ?? ROOMS[0];

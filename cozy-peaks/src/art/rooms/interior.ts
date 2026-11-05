@@ -3,13 +3,13 @@ import { boxes, bricksPatch, cat, cobweb, cracks, curtains, dustSheet, floor, fl
 
 /* ================= shared interior pieces ================= */
 
-interface WallStyle {
+export interface WallStyle {
   c: string;
-  pattern: 'stripes' | 'dots' | 'damask' | 'roses' | 'plain';
+  pattern: 'stripes' | 'dots' | 'damask' | 'roses' | 'tiles' | 'plain';
   ink: string;
 }
 
-function wall(st: WallStyle | null, wainscot: string): string {
+export function wall(st: WallStyle | null, wainscot: string): string {
   const H = 660;
   if (!st) {
     return `<rect width="1600" height="${H}" fill="#cfc2ad"/>
@@ -27,6 +27,9 @@ function wall(st: WallStyle | null, wainscot: string): string {
     for (let y = 80; y < H - 60; y += 110)
       for (let x = (y / 110) % 2 ? 60 : 0; x < 1600; x += 120)
         pat += `<path d="M${x} ${y - 34} C${x + 20} ${y - 20} ${x + 26} ${y} ${x} ${y + 34} C${x - 26} ${y} ${x - 20} ${y - 20} ${x} ${y - 34}Z M${x - 30} ${y} q30 -14 60 0" fill="${st.ink}" stroke="${st.ink}" stroke-width="2" opacity=".35"/>`;
+  if (st.pattern === 'tiles')
+    for (let y = 40; y < H; y += 44)
+      for (let x = ((y - 40) / 44) % 2 ? -40 : 0; x < 1600; x += 80) pat += `<rect x="${x + 2}" y="${y + 2}" width="76" height="40" rx="5" fill="${st.ink}" opacity=".22"/>`;
   if (st.pattern === 'roses') for (let y = 90; y < H - 60; y += 100) for (let x = (y / 100) % 2 ? 50 : 0; x < 1600; x += 100) pat += `<g opacity=".45">${flower(x, y, 12, st.ink, '#fff6d6')}</g>`;
   return `<rect width="1600" height="${H}" fill="${st.c}"/>${pat}
     <rect width="1600" height="40" fill="#fbf6ec"/><rect y="36" width="1600" height="10" fill="${shade(st.c, -0.12)}"/>
@@ -37,6 +40,12 @@ function wall(st: WallStyle | null, wainscot: string): string {
 }
 
 const CURTAINS: CurtainStyle[][] = [
+  [
+    { c: '#e55a5a', trim: '#ffffff', pattern: 'dots' },
+    { c: '#f6e7cf', trim: '#e0cfae', pattern: 'none' },
+    { c: '#7bc47f', trim: '#ffffff', pattern: 'stripes' },
+    { c: '#f2c94c', trim: '#ffffff', pattern: 'dots', tassel: '#e88f6a' },
+  ],
   [
     { c: '#efe4d0', trim: '#d8c6a4', pattern: 'none' },
     { c: '#f3a6b8', trim: '#ffffff', pattern: 'dots' },
@@ -51,7 +60,7 @@ const CURTAINS: CurtainStyle[][] = [
   ],
 ];
 
-function curtainsItem(set: number): ItemArt {
+export function curtainsItem(set: number): ItemArt {
   return { box: [1150, 60, 460, 600], draw: (v) => curtains(1250, 110, 260, 460, v < 0 ? null : CURTAINS[set][v]) };
 }
 
@@ -235,7 +244,7 @@ const livingItems: Record<string, ItemArt> = {
   ]),
   table,
   lamp: { box: [990, 230, 200, 400], draw: (v) => floorLamp(1090, 330, v) },
-  curtains: curtainsItem(0),
+  curtains: curtainsItem(1),
   art: {
     box: [560, 120, 460, 270],
     draw: (v) => {
@@ -384,7 +393,7 @@ const bedroomItems: Record<string, ItemArt> = {
     { a: '#2f3a66', b: '#5b6bb0', c: '#ffe08a', kind: 'stars' },
   ]),
   lamp: { box: [1060, 420, 180, 290], draw: nightstand },
-  curtains: curtainsItem(1),
+  curtains: curtainsItem(2),
   wardrobe: { box: [130, 120, 330, 560], draw: wardrobe },
   painting: { box: [640, 140, 320, 220], draw: (v) => (v < 0 ? `<circle cx="800" cy="200" r="6" fill="#5e584f"/><path d="M790 200 l-60 40 M810 200 l60 40" stroke="#8a7d6a" stroke-width="3"/>` : frameArt(700, 170, 200, 150, [2, 0, 1, 3][v], v === 3)) },
   chandelier: { box: [680, 0, 240, 200], draw: chandelier },

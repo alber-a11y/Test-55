@@ -1,6 +1,7 @@
 import type { ItemArt } from './common';
 import { SCENE_H, SCENE_W } from './common';
 import { GARDEN_BONUS, GARDEN_ITEMS, gardenBack, gardenLawn, gardenRuins, gardenTree, gardenWall } from './garden';
+import { KITCHEN, VERANDA } from './extra';
 import { BEDROOM, LIVING } from './interior';
 
 export { SCENE_H, SCENE_W };
@@ -38,6 +39,16 @@ const ROOM_ART: Record<string, RoomArt> = {
     bonus: BEDROOM.bonus,
     layers: [(s, v) => BEDROOM.back(s.stage, v('walls') < 0 ? undefined : v('walls')), 'painting', 'chandelier', 'wardrobe', 'curtains', 'rug', 'bed', 'lamp', (s) => BEDROOM.ruins(s.stage)],
   },
+  kitchen: {
+    items: KITCHEN.items,
+    bonus: KITCHEN.bonus,
+    layers: [(s, v) => KITCHEN.back(s.stage, v('walls') < 0 ? undefined : v('walls')), 'shelf', 'cabinets', 'stove', 'fridge', 'curtains', 'pendant', 'table', (s) => KITCHEN.ruins(s.stage)],
+  },
+  veranda: {
+    items: VERANDA.items,
+    bonus: VERANDA.bonus,
+    layers: [() => VERANDA.back(), 'deck', 'railing', 'awning', 'lanterns', 'plants', 'swing', 'armchair', 'table', (s) => VERANDA.ruins(s.stage)],
+  },
 };
 
 const cache = new Map<string, string>();
@@ -72,13 +83,16 @@ function thumbSvg(item: ItemArt, variant: number, bg: string): string {
     <rect x="${x - pad}" y="${y - pad}" width="${w + pad * 2}" height="${h + pad * 2}" fill="${bg}"/>${item.draw(variant)}</svg>`;
 }
 
-const THUMB_BG: Record<string, string> = { garden: '#d9f0c8', living: '#f3e6d2', bedroom: '#f3e3ee' };
+const THUMB_BG: Record<string, string> = { garden: '#d9f0c8', living: '#f3e6d2', bedroom: '#f3e3ee', kitchen: '#e3f1ea', veranda: '#dcefff' };
 
 /** Thumbnail of one task variant for the carousels. */
 export function itemThumb(roomId: string, taskId: string, variant: number): string {
   const art = ROOM_ART[roomId];
   const item = art.items[taskId];
   if (!item) return '';
+  if (taskId === 'deck') {
+    return `<svg viewBox="300 600 900 400" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" class="thumb-svg">${item.draw(variant)}</svg>`;
+  }
   if (taskId === 'walls') {
     return `<svg viewBox="300 0 700 420" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg" class="thumb-svg">${item.draw(variant)}</svg>`;
   }
