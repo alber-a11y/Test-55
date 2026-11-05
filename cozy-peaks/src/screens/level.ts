@@ -11,7 +11,7 @@ import { INTRO } from '../game/generator';
 import { getLevel, prefetch } from '../game/levels';
 import { Game, STREAK_BONUS_AT, type GameEvent, type LevelData } from '../game/model';
 import { boosterDef, LEVEL_BOOSTERS, START_BOOSTERS, type BoosterId } from '../meta/boosters';
-import { addBooster, addCoins, boosterCount, chestStep, currentRoom, hasLife, loseLife, nextTask, playerLevel, roomStage, spendCoins, useBooster } from '../meta/economy';
+import { addBooster, addCoins, boosterCount, chestStep, currentRoom, hasLife, loseLife, nextTask, playerLevel, spendCoins, useBooster } from '../meta/economy';
 import { bumpGoal } from '../meta/goals';
 import { ads } from '../platform/AdManager';
 import { h, svgEl, wait } from '../ui/dom';
@@ -200,8 +200,10 @@ async function level({ n }: Params): Promise<Screen> {
     const bx = P ? 20 : W * 0.17;
     const bw = P ? W - 40 : W * 0.66;
     const by = P ? Math.max(330, H * 0.21) : 210;
-    const bh = P ? H * 0.33 : 355;
-    cw = Math.min(bw / ((L.cols - 1) * COL_STEP + 1), bh / (ASPECT * (ROW_STEP * (L.rows - 1) + 1)), P ? 120 : 118);
+    // Landscape: extra height (4:3 screens) goes mostly to the board.
+    const extraH = P ? 0 : Math.max(0, H - 900);
+    const bh = P ? H * 0.33 : 355 + extraH * 0.6;
+    cw = Math.min(bw / ((L.cols - 1) * COL_STEP + 1), bh / (ASPECT * (ROW_STEP * (L.rows - 1) + 1)), P ? 120 : 118 + extraH * 0.08);
     ch = cw * ASPECT;
     const totalW = (L.cols - 1) * COL_STEP * cw + cw;
     const totalH = ch * (ROW_STEP * (L.rows - 1) + 1);
@@ -212,7 +214,7 @@ async function level({ n }: Params): Promise<Screen> {
     // Stock, waste, boosters row.
     const pw = P ? Math.min(118, cw * 1.05) : Math.min(124, Math.max(cw, 104));
     const phh = pw * ASPECT;
-    const rowY = P ? by + bh + 70 : 610;
+    const rowY = P ? by + bh + 70 : 610 + extraH * 0.6;
     if (P) {
       stockPos = { x: 34, y: rowY };
       wastePos = { x: 34 + pw + 52, y: rowY };
@@ -224,8 +226,8 @@ async function level({ n }: Params): Promise<Screen> {
       stockPos = { x: W / 2 - 330, y: rowY };
       wastePos = { x: W / 2 - 140, y: rowY };
       set(boostersEl, { left: W / 2 + 20, top: rowY + 8, right: 'auto' });
-      set(goalPanel, { left: 24, top: 618 });
-      set(strip, { left: 26, right: 26, top: 790, height: 100 });
+      set(goalPanel, { left: 24, top: rowY + 8 });
+      set(strip, { left: 26, right: 26, top: H - 110, height: 100 });
       set(bigBtn, { display: 'none' });
     }
     set(stockSlot, { left: stockPos.x, top: stockPos.y, width: pw, height: phh });
@@ -535,23 +537,53 @@ async function level({ n }: Params): Promise<Screen> {
 
   /* ---------- hints ---------- */
 
+  // Tutorial hand that taps the suggested card (first levels only).
+  const hand = svgEl(icon('hand'), 'tut-hand');
+  hand.style.display = 'none';
+  cardsLayer.append(hand);
+  const showHand = (x: number, y: number) => {
+    hand.style.display = '';
+    hand.style.transform = `translate(${x}px, ${y}px)`;
+  };
+
   const resetIdle = () => {
     clearTimeout(idleTimer);
     document.querySelectorAll('.card.hint').forEach((c) => c.classList.remove('hint'));
     stockPile.classList.remove('hint');
+    hand.style.display = 'none';
     if (ended || !save.data.settings.hint) return;
-    idleTimer = window.setTimeout(showHint, n <= 3 ? 3500 : 8000);
+    idleTimer = window.setTimeout(showHint, n <= 3 ? 2500 : 8000);
   };
 
   const showHint = () => {
     if (ended || paused) return;
     const moves = game.playable();
-    if (moves.length) moves.slice(0, 2).forEach((i) => slotEls[i]?.classList.add('hint'));
-    else if (game.stockCount > 0) {
+    if (moves.length) {
+      moves.slice(0, 2).forEach((i) => slotEls[i]?.classList.add('hint'));
+      if (n <= 3) showHand(slotPos[moves[0]].x + cw * 0.45, slotPos[moves[0]].y + ch * 0.55);
+    } else if (game.stockCount > 0) {
       stockPile.classList.add('hint');
-      if (n <= 3) toast(t('tapStock'));
+      if (n <= 3) {
+        toast(t('tapStock'));
+        showHand(stockPos.x + pileW * 0.45, stockPos.y + pileH * 0.55);
+      }
     }
   };
+
+  // Keyboard: Space/Enter/↓ draw, Z/Backspace undo, 1–5 boosters, Esc/P pause.
+  const onKey = (e: KeyboardEvent) => {
+    if (ended || document.querySelector('.modal-back')) return;
+    const k = e.key.toLowerCase();
+    if (k === ' ' || k === 'enter' || k === 'arrowdown') onStock();
+    else if (k === 'z' || k === 'backspace' || k === 'я') void onBooster('undo', false);
+    else if (k === 'escape' || k === 'p' || k === 'з') pauseMenu();
+    else if (/^[1-5]$/.test(k)) {
+      const b = LEVEL_BOOSTERS.filter((x) => n >= x.unlockAt)[+k - 1];
+      if (b) void onBooster(b.id, false);
+    } else return;
+    e.preventDefault();
+  };
+  window.addEventListener('keydown', onKey);
 
   /* ---------- start ---------- */
 
@@ -845,9 +877,8 @@ async function level({ n }: Params): Promise<Screen> {
     },
     destroy: () => {
       clearTimeout(idleTimer);
+      window.removeEventListener('keydown', onKey);
       ended = true;
     },
   };
 }
-
-void roomStage;
