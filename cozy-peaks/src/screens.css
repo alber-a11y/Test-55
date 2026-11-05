@@ -1,0 +1,176 @@
+/* Screen-specific layout. Units are design pixels of the virtual stage. */
+.bg-room.blur { filter: blur(6px) brightness(.95); transform: scale(1.05); }
+.bg-dim { position: absolute; inset: 0; background: linear-gradient(rgba(255,245,225,.0), rgba(255,240,215,.12)); pointer-events: none; }
+.board, .slot { position: absolute; pointer-events: none; }
+.slot.waste-slot { border-radius: 12px; }
+.stock-pile.hint { animation: hintPulse 1s ease-in-out infinite; }
+@keyframes hintPulse { 50% { filter: drop-shadow(0 0 14px #ffe066); } }
+
+/* ---------- level ---------- */
+.big-cta { position: absolute; display: flex; justify-content: center; z-index: 6; }
+.big-cta .btn { min-width: 560px; }
+.portrait .boosters { gap: 8px; justify-content: space-between; }
+.portrait .booster { width: 98px; flex: none; }
+.portrait .booster-ball { width: 88px; height: 88px; }
+.portrait .booster-ball .ico-wrap { width: 50px; height: 50px; }
+.portrait .booster-n { top: 52px; right: 2px; width: 38px; height: 38px; font-size: 21px; }
+.portrait .booster-label { font-size: 17px; padding: 0 6px; }
+.portrait .goal-panel { width: 340px; }
+.portrait .meta-strip { flex-wrap: nowrap; }
+.portrait .meta-strip .variants { display: none; }
+.portrait .meta-strip .ms-arrow { display: none; }
+.portrait .meta-strip .ms-ico { width: 150px; height: 130px; }
+.landscape .meta-strip .ms-text { width: 330px; }
+.meta-strip .ms-ico svg { width: 100%; height: 100%; border-radius: 14px; }
+.meta-strip > .btn { margin-left: auto; }
+.landscape .meta-strip .variant { width: 196px; height: 80px; }
+
+.peek-box { position: absolute; z-index: 20; padding: 12px 16px; display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 22px; animation: pop .25s; }
+.peek-box.out { opacity: 0; transition: opacity .3s; }
+.peek-row { display: flex; gap: 8px; }
+.peek-card { width: 70px; height: 98px; }
+.peek-card svg { width: 100%; height: 100%; }
+
+.m-pre .pre-goal { display: flex; align-items: center; gap: 14px; font-size: 30px; color: #3f2a6b; }
+.m-pre .pre-goal .ico-wrap { width: 70px; height: 70px; }
+.pre-boosters { display: flex; gap: 18px; flex-wrap: wrap; justify-content: center; }
+.pre-b { position: relative; width: 140px; display: flex; flex-direction: column; align-items: center; }
+.pre-b .booster-ball { width: 110px; height: 110px; }
+.pre-b .booster-ball .ico-wrap { width: 62px; height: 62px; }
+.pre-b .booster-n { right: 6px; top: 70px; }
+.pre-b.on .booster-ball { box-shadow: 0 0 0 7px #7ee08a, 0 6px 0 var(--purple2); }
+.pre-b.locked { filter: grayscale(1); opacity: .55; }
+.pre-b .pre-check { position: absolute; left: 4px; top: -6px; width: 46px; height: 46px; }
+.pre-b .booster-label { font-size: 19px; white-space: normal; text-align: center; line-height: 1.1; padding: 2px 8px; }
+
+.win-title { font-size: 30px; color: var(--plum2); }
+.win-stars { display: flex; gap: 10px; align-items: flex-end; }
+.win-star { width: 110px; height: 110px; opacity: .25; filter: grayscale(1); }
+.win-star:nth-child(2) { width: 140px; height: 140px; }
+.win-star.on { opacity: 1; filter: none; animation: starIn .5s cubic-bezier(.3,1.8,.5,1) both; }
+@keyframes starIn { from { transform: scale(0) rotate(-90deg); opacity: 0; } }
+.fail-cards { position: relative; width: 140px; height: 190px; }
+.fail-deck { width: 120px; height: 168px; margin: 10px auto; }
+.fail-deck svg { width: 100%; height: 100%; }
+.fail-plus { position: absolute; right: -30px; top: -10px; z-index: 2; background: #34c26b; color: #fff; font-size: 40px; font-weight: 900; border-radius: 30px; padding: 2px 16px; border: 4px solid #fff; }
+.big-heart.broken { filter: grayscale(.4); }
+
+/* ---------- hotspots ---------- */
+.spots { position: absolute; inset: 0; pointer-events: none; z-index: 3; }
+.spot { position: absolute; transform: translate(-50%, -100%); pointer-events: auto; display: flex; align-items: center; gap: 8px; background: linear-gradient(#ffffff, #f2ead8); border: 3px solid #9ccf7a; border-radius: 30px; padding: 6px 18px 6px 8px; font-weight: 900; font-size: 26px; color: var(--brown); box-shadow: 0 5px 0 rgba(80,120,50,.3); white-space: nowrap; }
+.spot::after { content: ''; position: absolute; left: 50%; bottom: -26px; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: #7ed957; border: 3px solid #fff; box-shadow: 0 0 0 2px #4f9d4c; }
+.spot::before { content: ''; position: absolute; left: 50%; bottom: -14px; margin-left: -9px; border: 9px solid transparent; border-top-color: #9ccf7a; border-bottom: 0; }
+.spot .spot-ico { width: 42px; height: 42px; }
+.spot em { font-style: normal; display: inline-flex; align-items: center; gap: 2px; color: #c98a12; }
+.spot .spot-star { width: 28px; height: 28px; }
+.spot.sel { border-color: #ffd23f; box-shadow: 0 0 0 4px #ffe066, 0 6px 0 rgba(160,110,20,.35); transform: translate(-50%, -100%) scale(1.08); z-index: 2; }
+.spot.done { border-color: #7ac3f0; opacity: .92; }
+.spot.gift { border-color: #e88fc0; }
+.spot.pulse { animation: spotPulse 1.3s ease-in-out infinite; }
+@keyframes spotPulse { 50% { transform: translate(-50%, -108%) scale(1.06); } }
+.sel-item { filter: drop-shadow(0 0 8px #fff7a8) drop-shadow(0 0 3px #ffe066); }
+
+/* ---------- home ---------- */
+.right-btns { position: absolute; right: 22px; top: 150px; display: flex; flex-direction: column; gap: 16px; z-index: 6; }
+.portrait .right-btns { top: 230px; }
+.badge-ad { position: absolute; right: -12px; top: -12px; width: 50px; height: 40px; background: #8c55e0; border-radius: 12px; padding: 3px 7px; border: 3px solid #fff; }
+.home-bottom { position: absolute; left: 0; right: 0; bottom: 34px; display: flex; justify-content: center; align-items: center; gap: 26px; z-index: 6; }
+.portrait .home-bottom { flex-direction: column-reverse; bottom: 60px; gap: 18px; }
+.play-btn { min-width: 520px; }
+
+/* ---------- heroes ---------- */
+.heroes-head { position: absolute; left: 0; right: 0; top: 34px; text-align: center; z-index: 2; }
+.game-title { font-size: 76px; font-weight: 900; color: #fff; text-shadow: 0 5px 0 var(--plum2), 0 10px 20px rgba(0,0,0,.25); letter-spacing: 1px; }
+.game-sub { font-size: 34px; font-weight: 900; color: var(--plum2); margin-top: -6px; }
+.heroes-q { display: inline-block; margin-top: 10px; font-size: 26px; font-weight: 800; background: rgba(255,250,240,.9); border-radius: 20px; padding: 6px 22px; }
+.hero-grid { position: absolute; left: 50%; top: 250px; transform: translateX(-50%); display: grid; grid-template-columns: repeat(6, 230px); gap: 18px; }
+.portrait .hero-grid { grid-template-columns: repeat(2, 380px); top: 300px; gap: 22px; }
+.hero-card { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 16px 12px 18px; text-align: center; }
+.hero-card.sel { box-shadow: 0 0 0 6px #ffd23f, var(--shadow); }
+.hero-face { width: 180px; height: 180px; }
+.hero-face svg { width: 100%; height: 100%; }
+.hero-name { font-size: 28px; font-weight: 900; color: var(--plum2); }
+.hero-bio { font-size: 19px; font-weight: 700; color: var(--muted); min-height: 50px; line-height: 1.2; }
+.portrait .hero-card { flex-direction: row; flex-wrap: wrap; justify-content: center; text-align: left; }
+.portrait .hero-face { width: 150px; height: 150px; }
+.portrait .hero-bio { width: 100%; text-align: center; min-height: 0; }
+
+/* ---------- room (decor) ---------- */
+.room-view { position: absolute; inset: 0; overflow: hidden; touch-action: none; }
+.room-svg-host { position: absolute; left: 0; top: 0; }
+.room-title { position: absolute; left: 50%; top: 92px; transform: translateX(-50%); display: flex; align-items: center; gap: 16px; padding: 10px 34px 12px 18px; z-index: 5; }
+.room-title .rt-ico { width: 74px; height: 74px; }
+.room-title b { display: block; font-size: 36px; color: var(--plum2); font-weight: 900; }
+.room-title span { font-size: 22px; font-weight: 800; }
+.portrait .room-title { top: 210px; }
+.before-after { position: absolute; left: 24px; top: 500px; z-index: 5; }
+.ba-card { position: relative; width: 210px; height: 140px; background: #fff; padding: 7px; border-radius: 12px; transform: rotate(-4deg); box-shadow: 0 8px 20px rgba(0,0,0,.25); }
+.before-after:active .ba-card { transform: rotate(0) scale(1.05); }
+.ba-img, .ba-img svg { width: 100%; height: 100%; border-radius: 8px; }
+.ba-tag { position: absolute; left: 14px; top: -16px; z-index: 2; background: #fff3c4; padding: 2px 14px; border-radius: 10px; font-weight: 900; font-size: 22px; transform: rotate(-6deg); color: var(--plum2); }
+.portrait .before-after { display: none; }
+.decor-strip { left: 26px; right: 26px; bottom: 16px; height: 130px; }
+.landscape .decor-strip .ms-text { width: 300px; }
+.decor-strip .ms-text b { font-size: 26px; }
+.decor-strip .variant { width: 180px; height: 104px; }
+.decor-strip .v-img, .decor-strip .v-img svg { width: 100%; height: 100%; }
+.portrait .decor-strip { flex-wrap: wrap; height: auto; justify-content: center; bottom: 20px; }
+.portrait .decor-strip .variants { display: flex; width: 100%; justify-content: center; gap: 10px; }
+.portrait .decor-strip .variant { width: 196px; height: 118px; }
+.portrait .decor-strip .ms-ico { display: none; }
+.portrait .decor-strip .ms-text { flex: 1; }
+.room-home { position: absolute; left: 22px; z-index: 6; top: 420px; }
+.landscape .room-home { top: 420px; left: 22px; }
+.portrait .room-home { top: 500px; }
+.done-preview { width: 640px; height: 400px; border-radius: 16px; overflow: hidden; border: 6px solid #fff; }
+.portrait .done-preview { width: 100%; height: 360px; }
+.done-preview svg { width: 100%; height: 100%; }
+.bonus-thumb { width: 300px; height: 240px; border-radius: 20px; overflow: hidden; border: 4px solid #fff; box-shadow: var(--shadow); }
+.bonus-thumb svg { width: 100%; height: 100%; }
+
+/* ---------- rooms list ---------- */
+.rooms-head, .shop-head { position: absolute; left: 0; right: 0; top: 120px; display: flex; justify-content: center; z-index: 3; }
+.portrait .rooms-head, .portrait .shop-head { top: 200px; }
+.rooms-list { position: absolute; left: 60px; right: 60px; top: 200px; bottom: 120px; display: grid; grid-template-columns: repeat(4, 1fr); gap: 26px; align-content: start; }
+.portrait .rooms-list { left: 30px; right: 30px; top: 290px; grid-template-columns: repeat(2, 1fr); }
+.room-card { position: relative; padding: 14px; display: flex; flex-direction: column; gap: 10px; text-align: center; }
+.room-card.current { box-shadow: 0 0 0 6px #ffd23f, var(--shadow); }
+.rc-img { width: 100%; aspect-ratio: 16/10; border-radius: 16px; overflow: hidden; }
+.rc-img svg { width: 100%; height: 100%; }
+.rc-name { font-size: 30px; font-weight: 900; color: var(--plum2); }
+.room-card.locked .rc-img { filter: grayscale(1) blur(2px); opacity: .7; }
+.rc-lock { position: absolute; left: 50%; top: 36%; transform: translate(-50%, -50%); }
+.rc-lock .ico-wrap { width: 100px; height: 100px; }
+.room-card.soon { justify-content: center; align-items: center; min-height: 260px; opacity: .85; }
+.room-card.soon .ico-wrap { width: 100px; height: 100px; }
+.rooms-home, .shop-home { position: absolute; left: 50%; bottom: 26px; transform: translateX(-50%); z-index: 5; }
+
+/* ---------- shop ---------- */
+.shop-panel { position: absolute; left: 50%; transform: translateX(-50%); top: 180px; bottom: 120px; width: min(1440px, calc(100% - 60px)); padding: 30px 24px 20px; display: flex; flex-direction: column; gap: 18px; }
+.portrait .shop-panel { top: 270px; }
+.shop-tabs { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.shop-tab { display: flex; align-items: center; gap: 8px; padding: 8px 22px 8px 12px; border-radius: 26px; background: #f3e3c3; font-weight: 900; font-size: 24px; border: 3px solid #fff; box-shadow: 0 3px 0 rgba(120,80,30,.2); }
+.shop-tab .ico-wrap { width: 40px; height: 40px; }
+.shop-tab.on { background: linear-gradient(#934b72, var(--plum2)); color: #fff; }
+.shop-grid { flex: 1; overflow-y: auto; display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 16px; align-content: start; padding: 6px; touch-action: pan-y; }
+.portrait .shop-grid { grid-template-columns: repeat(3, 1fr); }
+.shop-section { grid-column: 1 / -1; font-size: 28px; font-weight: 900; color: var(--plum2); margin-top: 6px; text-align: left; }
+.shop-item { position: relative; background: #fff; border-radius: 22px; border: 3px solid var(--edge); padding: 14px 10px; display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; }
+.shop-item.owned { background: #f4fbef; }
+.si-vis { width: 130px; height: 120px; display: grid; place-items: center; position: relative; }
+.si-vis.booster-ball { width: 110px; height: 110px; }
+.si-vis.booster-ball .ico-wrap { width: 64px; height: 64px; }
+.si-count { position: absolute; right: -14px; bottom: -4px; background: #34c26b; color: #fff; font-weight: 900; font-size: 22px; padding: 0 10px; border-radius: 16px; border: 3px solid #fff; }
+.si-big .svgwrap { width: 100px; height: 100px; }
+.si-pack { grid-template-columns: 1fr 1fr; gap: 4px; background: radial-gradient(circle, #e9dcff, #fff); border-radius: 50%; }
+.si-pack .ico-wrap { width: 54px; height: 54px; padding: 7px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #c9a4ff, #8c55e0); border: 2px solid #fff; }
+.si-back { width: 86px; height: 120px; } .si-back svg { width: 100%; height: 100%; }
+.si-frame { width: 120px; height: 120px; } .si-frame > .svgwrap { position: absolute; inset: 0; } .si-frame svg { width: 100%; height: 100%; border-radius: 50%; }
+.si-thumb { width: 190px; height: 120px; border-radius: 14px; overflow: hidden; } .si-thumb svg { width: 100%; height: 100%; }
+.si-name { font-weight: 900; font-size: 22px; line-height: 1.1; }
+.si-sub { font-size: 16px; color: var(--muted); font-weight: 700; line-height: 1.15; }
+.si-owned, .si-cd { display: flex; align-items: center; gap: 6px; font-weight: 900; color: #2e8a26; font-size: 22px; min-height: 56px; }
+.si-owned .ico-wrap, .si-cd .ico-wrap { width: 40px; height: 40px; }
+.si-cd { color: var(--muted); }
+.si-badge { position: absolute; left: -8px; top: -8px; z-index: 2; color: #fff; font-weight: 900; font-size: 16px; padding: 2px 10px; border-radius: 10px; border: 2px solid #fff; }
+.si-hit { background: #e8574a; } .si-best { background: #8c55e0; } .si-new { background: #3d8bfd; }
