@@ -11,7 +11,7 @@ import { INTRO } from '../game/generator';
 import { getLevel, prefetch } from '../game/levels';
 import { Game, STREAK_BONUS_AT, type GameEvent, type LevelData } from '../game/model';
 import { boosterDef, LEVEL_BOOSTERS, START_BOOSTERS, type BoosterId } from '../meta/boosters';
-import { addBooster, addCoins, boosterCount, chestStep, currentRoom, hasLife, loseLife, nextTask, playerLevel, spendCoins, useBooster } from '../meta/economy';
+import { addBooster, addCoins, allRoomsComplete, boosterCount, chestStep, currentRoom, hasLife, loseLife, nextTask, playerLevel, spendCoins, useBooster } from '../meta/economy';
 import { bumpGoal } from '../meta/goals';
 import { ads } from '../platform/AdManager';
 import { h, svgEl, wait } from '../ui/dom';
@@ -197,7 +197,7 @@ async function level({ n }: Params): Promise<Screen> {
     strip.replaceChildren();
     bigBtn.replaceChildren();
     if (!task) {
-      strip.append(h('div', { class: 'ms-text' }, h('b', { text: t('soon') })));
+      strip.append(h('div', { class: 'ms-text' }, h('b', { text: allRoomsComplete() ? t('allDone') : t('soon') })));
       return;
     }
     const chosen = save.data.rooms[room.id].tasks[task.id] ?? 0;

@@ -123,7 +123,9 @@ export function chestModal(reward?: ChestReward): void {
 }
 
 export function rewardChip(ic: Parameters<typeof iconEl>[0], value: string, label = ''): HTMLElement {
-  return h('div', { class: 'reward-chip' }, iconEl(ic), h('b', { text: value }), label ? h('span', { text: label }) : null);
+  // Booster icons are white glyphs: put them on a purple ball.
+  const boost = Object.values(BOOSTER_ICON).includes(ic);
+  return h('div', { class: 'reward-chip' }, iconEl(ic, boost ? 'boost' : ''), h('b', { text: value }), label ? h('span', { text: label }) : null);
 }
 
 export function goalsModal(): void {

@@ -128,6 +128,21 @@ export function nextTask(room: RoomDef = currentRoom()) {
   return room.tasks.find((t) => !(t.id in d().rooms[room.id].tasks)) ?? null;
 }
 
+export function allRoomsComplete(): boolean {
+  return ROOMS.every(roomComplete);
+}
+
+/** Stars needed for one chest once every room is finished. */
+export const STARS_PER_CHEST = 10;
+
+/** Endgame sink for stars: trade them for a chest. */
+export function exchangeStars(): ChestReward | null {
+  if (d().stars < STARS_PER_CHEST) return null;
+  d().stars -= STARS_PER_CHEST;
+  track('stars_exchange', {});
+  return openChest();
+}
+
 export function isRoomUnlocked(room: RoomDef): boolean {
   const i = ROOMS.indexOf(room);
   return i === 0 || roomComplete(ROOMS[i - 1]);
@@ -262,6 +277,11 @@ export function chestStep(): ChestReward | null {
     return null;
   }
   s.chest = 0;
+  return openChest();
+}
+
+/** Roll and grant a chest reward. */
+export function openChest(): ChestReward {
   const pool: BoosterId[] = ['undo', 'wild', 'plusCard', 'hammer', 'peek', 'lucky'];
   const a = pool[Math.floor(Math.random() * pool.length)];
   const b = pool[Math.floor(Math.random() * pool.length)];

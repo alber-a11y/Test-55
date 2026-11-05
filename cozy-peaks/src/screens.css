@@ -63,7 +63,7 @@
 .spot .spot-ico { width: 42px; height: 42px; }
 .spot em { font-style: normal; display: inline-flex; align-items: center; gap: 2px; color: #c98a12; }
 .spot .spot-star { width: 28px; height: 28px; }
-.spot.sel { border-color: #ffd23f; box-shadow: 0 0 0 4px #ffe066, 0 6px 0 rgba(160,110,20,.35); transform: translate(-50%, -100%) scale(1.08); z-index: 2; }
+.spot.sel { border-color: #ffd23f; box-shadow: 0 0 0 4px #ffe066, 0 6px 0 rgba(160,110,20,.35); scale: 1.08; z-index: 2; }
 .spot.done { border-color: #7ac3f0; opacity: .92; }
 .spot.gift { border-color: #e88fc0; }
 .spot.pulse { animation: spotPulse 1.3s ease-in-out infinite; }
@@ -204,3 +204,22 @@
 .wheel-disc svg { width: 100%; height: 100%; }
 .wheel-pointer { position: absolute; left: 50%; top: -14px; margin-left: -26px; width: 52px; height: 64px; background: #e63946; clip-path: polygon(0 0, 100% 0, 50% 100%); filter: drop-shadow(0 4px 2px rgba(0,0,0,.3)); }
 .wheel-result { min-height: 110px; display: flex; align-items: center; gap: 16px; font-size: 30px; color: var(--plum2); }
+
+/* Label placement around the anchor (chosen by resolveLabels). */
+.spot[data-pos="down"] { transform: translate(-50%, 30px); }
+.spot[data-pos="upL"] { transform: translate(-88%, -100%); }
+.spot[data-pos="upR"] { transform: translate(-12%, -100%); }
+.spot[data-pos="downL"] { transform: translate(-88%, 30px); }
+.spot[data-pos="downR"] { transform: translate(-12%, 30px); }
+.spot[data-pos^="down"]::after { bottom: auto; top: -26px; }
+.spot[data-pos^="down"]::before { bottom: auto; top: -14px; border-top: 0; border-bottom: 9px solid #9ccf7a; }
+.spot[data-pos$="L"]::after, .spot[data-pos$="L"]::before { left: 88%; }
+.spot[data-pos$="R"]::after, .spot[data-pos$="R"]::before { left: 12%; }
+.ba-card { width: 170px !important; height: 112px !important; }
+.reward-chip .ico-wrap.boost, .goal-reward .ico-wrap.boost { border-radius: 50%; padding: 8px; background: radial-gradient(circle at 35% 30%, #c9a4ff, #8c55e0); border: 2px solid #fff; }
+
+.mini-stages { display: flex !important; align-items: center; gap: 6px; }
+.mini-stages i { display: inline-block; width: 22px; height: 22px; border-radius: 50%; background: #bfb19a; border: 3px solid #fff; box-shadow: 0 0 0 1px #d9c8a8; }
+.mini-stages i.on { background: #34c26b; }
+.landscape .decor-strip .ms-ico { display: none; }
+.landscape .decor-strip .ms-text { width: 390px; }

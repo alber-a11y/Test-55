@@ -3,14 +3,14 @@ import { icon } from '../art/icons';
 import { roomSvg, SCENE_H, SCENE_W } from '../art/rooms';
 import { t, tr } from '../core/i18n';
 import { save } from '../core/save';
-import { currentRoom, hasLife, nextTask, roomComplete } from '../meta/economy';
+import { allRoomsComplete, currentRoom, exchangeStars, hasLife, nextTask, roomComplete, STARS_PER_CHEST } from '../meta/economy';
 import { shopItem } from '../meta/shop';
 import { h, svgEl } from '../ui/dom';
 import { chestModal, goalsModal, livesModal, rulesModal, settingsModal, watchFor } from '../ui/dialogs';
 import { hud } from '../ui/hud';
 import { go, register, type Screen } from '../ui/router';
 import { stage } from '../ui/stage';
-import { button, iconEl } from '../ui/widgets';
+import { button, iconEl, toast } from '../ui/widgets';
 import { wheelModal } from '../ui/wheel';
 import { freeSpinReady } from '../meta/wheel';
 import { makeoverPlaque, roomState } from './common';
@@ -39,9 +39,19 @@ register('home', (): Screen => {
 
   const decorBtn = task
     ? button(t('decorate'), { variant: save.data.stars >= task.cost ? 'green' : 'cream', cost: { kind: 'star', n: task.cost }, onClick: () => void go('room', { room: room.id, task: task.id }, 'to_room') })
-    : roomComplete(room)
-      ? button(t('nextRoom'), { variant: 'blue', icon: 'house', onClick: () => void go('rooms', {}, 'to_rooms') })
-      : null;
+    : allRoomsComplete()
+      ? button(t('starsChest'), {
+          variant: 'gold',
+          cost: { kind: 'star', n: STARS_PER_CHEST },
+          onClick: () => {
+            const r = exchangeStars();
+            if (!r) return toast(t('notEnoughStars'), 'bad');
+            chestModal(r);
+          },
+        })
+      : roomComplete(room)
+        ? button(t('nextRoom'), { variant: 'blue', icon: 'house', onClick: () => void go('rooms', {}, 'to_rooms') })
+        : null;
 
   const gift = shopItem('coins_ad')!;
   const right = h(

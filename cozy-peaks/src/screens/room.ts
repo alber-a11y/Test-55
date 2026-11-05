@@ -47,13 +47,13 @@ register('room', (p: { room?: string; task?: string }): Screen => {
 
   const homeBtn = button(t('home'), { variant: 'cream', icon: 'house', small: true, cls: 'room-home', onClick: () => void go('home', {}, 'to_home') });
 
+  void plaqueHost;
   el.append(
     view,
     hud(
       { lives: livesModal, coins: () => void go('shop', { tab: 'extras' }, 'to_shop'), chest: () => chestModal(), info: rulesModal, settings: () => settingsModal(), goals: goalsModal, rooms: () => void go('rooms', {}, 'to_rooms') },
       { side: true },
     ),
-    plaqueHost,
     beforeAfter,
     homeBtn,
     strip,
@@ -100,6 +100,38 @@ register('room', (p: { room?: string; task?: string }): Screen => {
       spots.append(
         h('button', { class: 'spot gift', style: `left:${ox + b.at.x * s}px;top:${oy + b.at.y * s}px`, onclick: () => bonusModal(b.id) }, svgEl(icon('gift'), 'spot-ico'), h('span', { text: tr(b.name) })),
       );
+    }
+    requestAnimationFrame(resolveLabels);
+  };
+
+  /**
+   * Keep hotspot labels readable: if a label hits the HUD, panels or another label,
+   * try it below the anchor or shifted sideways.
+   */
+  const resolveLabels = () => {
+    type R = { x: number; y: number; w: number; h: number };
+    const hit = (a: R, b: R) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+    const reserved: R[] = [...el.querySelectorAll('.hud-player, .hud .pill, .hud .chest-bar, .hud .round-btn, .side-btn, .room-plaque .makeover, .before-after, .room-home, .decor-strip')].map((e) => stage.rect(e));
+    const placed: R[] = [];
+    const order = ['up', 'down', 'upL', 'upR', 'downL', 'downR'];
+    // The selected label goes first so it keeps the best place.
+    const list = [...spots.children].sort((a, b) => Number(b.classList.contains('sel')) - Number(a.classList.contains('sel'))) as HTMLElement[];
+    for (const sp of list) {
+      let best = 'up';
+      let bestScore = Infinity;
+      for (const pos of order) {
+        sp.dataset.pos = pos;
+        const r = stage.rect(sp);
+        const out = r.x < 0 || r.x + r.w > stage.w || r.y < 0 || r.y + r.h > stage.h;
+        const score = reserved.filter((q) => hit(r, q)).length * 2 + placed.filter((q) => hit(r, q)).length + (out ? 3 : 0);
+        if (score < bestScore) {
+          bestScore = score;
+          best = pos;
+        }
+        if (score === 0) break;
+      }
+      sp.dataset.pos = best;
+      placed.push(stage.rect(sp));
     }
   };
 
@@ -181,10 +213,16 @@ register('room', (p: { room?: string; task?: string }): Screen => {
     }
     strip.append(
       h('div', { class: 'ms-ico', html: itemThumb(room.id, selected.id, -1) }),
-      h('div', { class: 'ms-text' }, h('small', { text: tr(room.name) }), h('b', { text: t('chooseNew', { item: tr(selected.name) }) })),
+      h('div', { class: 'ms-text' }, miniStages(), h('b', { text: t('chooseNew', { item: tr(selected.name) }) })),
       variants,
       action,
     );
+  };
+
+  /** Room name + three stage checks (the top plaque is hidden on this screen to keep the scene clear). */
+  const miniStages = () => {
+    const done = roomDone(room);
+    return h('small', { class: 'mini-stages' }, h('span', { text: `${tr(room.name)} · ${done}/${room.tasks.length}` }), ...room.stages.map((st) => h('i', { class: done >= st ? 'on' : '' })));
   };
 
   const select = (task: TaskDef) => {
