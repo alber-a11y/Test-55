@@ -12,7 +12,7 @@ import { heroById } from './meta/heroes';
 import { tickLives } from './meta/economy';
 import { ads } from './platform/AdManager';
 import { installGuards } from './platform/guards';
-import { platform } from './platform/platform';
+import { initPlatform, platform } from './platform/platform';
 import './screens/heroes';
 import './screens/home';
 import './screens/level';
@@ -30,7 +30,7 @@ async function boot(): Promise<void> {
   fill(10);
   stage.mount(document.getElementById('stage')!);
   try {
-    await platform.init();
+    await initPlatform();
   } catch (e) {
     console.warn('[platform] init failed', e);
   }
