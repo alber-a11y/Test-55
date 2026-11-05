@@ -125,8 +125,71 @@ async function level({ n }: Params): Promise<Screen> {
   const renderGoal = () => {
     goalPanel.replaceChildren(ribbon(t('levelN', { n })), h('div', { class: 'goal-h', text: t('goal') }));
     const gt = game.goldTotal;
-    goalPanel.append(h('div', { class: 'goal-t' }, iconEl(gt ? 'coin' : 'plusCard'), h('span', { text: gt ? `${t('goalClear')} ${t('goalGold', { a: game.goldCollected, b: gt })}` : t('goalClear') })));
+    goalPanel.append(h('div', { class: 'goal-t' }, iconEl('plusCard'), h('span', { text: t('goalClear') })));
+    if (gt) goalPanel.append(h('div', { class: 'goal-gold' }, iconEl('coin'), h('span', { text: t('goalGold', { a: game.goldCollected, b: gt }) })));
+    if (data.bonus) {
+      const met = bonusMet(false);
+      goalPanel.append(h('div', { class: `goal-bonus ${met ? 'met' : ''}` }, iconEl(met ? 'check' : 'star'), h('span', { text: `${t('bonusGoal')} ${bonusText()}` })));
+    }
     if (data.tier === 'hard' || data.tier === 'superhard') goalPanel.append(h('span', { class: `tier-tag tier-${data.tier}`, text: `${t(data.tier)} · ${t('rewardX2')}` }));
+  };
+
+  let usedBoosters = false;
+  const bonusText = (): string => {
+    const b = data.bonus!;
+    switch (b.kind) {
+      case 'combo':
+        return t('bonusCombo', { n: b.n, a: Math.min(b.n, game.maxCombo) });
+      case 'colorRun':
+        return t('bonusColorRun', { n: b.n, a: Math.min(b.n, game.maxColorRun) });
+      case 'stockLeft':
+        return t('bonusStockLeft', { n: b.n, a: game.stockCount });
+      case 'noBoosters':
+        return t('bonusNoBoosters');
+    }
+  };
+  /** `final` — checked at the end of a won level (stock / no-booster goals). */
+  const bonusMet = (final: boolean): boolean => {
+    const b = data.bonus;
+    if (!b) return false;
+    switch (b.kind) {
+      case 'combo':
+        return game.maxCombo >= b.n;
+      case 'colorRun':
+        return game.maxColorRun >= b.n;
+      case 'stockLeft':
+        return final && game.stockCount >= b.n;
+      case 'noBoosters':
+        return final && !usedBoosters;
+    }
+  };
+  let bonusAnnounced = false;
+  const checkBonusLive = () => {
+    if (bonusAnnounced || !data.bonus || !bonusMet(false)) return;
+    bonusAnnounced = true;
+    audio.play('star');
+    toast(t('bonusDone'), 'good');
+  };
+
+  const explode = (slots: number[], burned: number) => {
+    if (!slots.length) return;
+    audio.play('boom');
+    for (const k of slots) {
+      const p = slotPos[k];
+      const burst = h('div', { class: 'burst boom', style: `left:${p.x + cw / 2}px;top:${p.y + ch / 2}px` });
+      document.getElementById('fx')!.append(burst);
+      setTimeout(() => burst.remove(), 800);
+    }
+    el.classList.remove('quake');
+    void el.offsetWidth;
+    el.classList.add('quake');
+    floatText(t('boom', { n: burned }), stockPos.x + pileW / 2, stockPos.y, 'big');
+    renderStock();
+  };
+
+  /** Refresh bomb counters on the table. */
+  const updateBombs = () => {
+    for (const [k, sp] of Object.entries(data.specials)) if (sp.kind === 'bomb' && slotEls[+k]) overlay(+k, slotEls[+k]!);
   };
 
   const renderStrip = () => {
@@ -226,7 +289,7 @@ async function level({ n }: Params): Promise<Screen> {
       stockPos = { x: W / 2 - 330, y: rowY };
       wastePos = { x: W / 2 - 140, y: rowY };
       set(boostersEl, { left: W / 2 + 20, top: rowY + 8, right: 'auto' });
-      set(goalPanel, { left: 24, top: rowY + 8 });
+      set(goalPanel, { left: 24, top: rowY - 14 });
       set(strip, { left: 26, right: 26, top: H - 110, height: 100 });
       set(bigBtn, { display: 'none' });
     }
@@ -275,6 +338,10 @@ async function level({ n }: Params): Promise<Screen> {
     if (sp.kind === 'gold') ov.append(h('div', { class: 'gold-ring' }), svgEl(icon('coin'), 'gold-coin'));
     if (sp.kind === 'key' && open) ov.append(svgEl(icon('key'), 'key-badge'));
     if (sp.kind === 'lock' && game.isLocked(i)) ov.append(h('div', { class: 'lock-ov' }, svgEl(icon('lock'))));
+    if (sp.kind === 'bomb' && !game.isRemoved(i)) {
+      const tm = game.bombTimer(i);
+      ov.append(h('div', { class: `bomb-badge ${tm <= 3 ? 'danger' : ''}` }, svgEl(icon('bomb')), h('b', { text: String(tm) })));
+    }
     if (sp.kind === 'ice' && game.iceHp(i) > 0)
       ov.append(h('div', { class: `ice-ov hp${game.iceHp(i)}`, html: `<svg viewBox="0 0 100 140"><path d="M20 30 l25 30 l-10 25 l30 30 M45 60 l30 -14" stroke="#fff" stroke-width="3" fill="none"/></svg>` }));
   };
@@ -356,6 +423,7 @@ async function level({ n }: Params): Promise<Screen> {
           audio.play('flip', { vol: 0.6 });
         }
         for (const k of [...ev.unlocked, ...ev.iceCracked]) placeSlot(k);
+        explode(ev.exploded, ev.burned);
         if (ev.unlocked.length) audio.play('unlock');
         if (ev.iceCracked.length) audio.play('ice');
         const at = { x: wastePos.x + pileW / 2, y: wastePos.y - 10 };
@@ -393,6 +461,7 @@ async function level({ n }: Params): Promise<Screen> {
         toWaste(e);
         renderStock();
         audio.play('draw');
+        explode(ev.exploded, ev.burned);
         break;
       }
       case 'wild': {
@@ -424,6 +493,11 @@ async function level({ n }: Params): Promise<Screen> {
         break;
     }
     updateChip();
+    updateBombs();
+    if (data.bonus) {
+      checkBonusLive();
+      renderGoal();
+    }
     persist();
     checkEnd();
   };
@@ -520,6 +594,7 @@ async function level({ n }: Params): Promise<Screen> {
       addBooster(id, 1);
     }
     if (!useBooster(id)) return;
+    usedBoosters = true;
     applyBooster(id);
     renderBoosters();
   };
@@ -593,6 +668,7 @@ async function level({ n }: Params): Promise<Screen> {
     save.data.stats.played++;
     for (const b of chosen) {
       if (!useBooster(b)) continue;
+      usedBoosters = true;
       if (b === 'lucky') {
         game.clearRandomFree(3, Math.random);
         audio.play('wild');
@@ -613,6 +689,8 @@ async function level({ n }: Params): Promise<Screen> {
     if (n === INTRO.gold) setTimeout(() => toast(t('introGold')), 400);
     if (n === INTRO.lock) setTimeout(() => toast(t('introLock')), 400);
     if (n === INTRO.ice) setTimeout(() => toast(t('introIce')), 400);
+    if (n === INTRO.bomb) setTimeout(() => toast(t('introBomb')), 400);
+    if (n === INTRO.bonus) setTimeout(() => toast(t('introBonus')), 400);
   };
 
   const preLevel = () => {
@@ -785,8 +863,9 @@ async function level({ n }: Params): Promise<Screen> {
     }
     const tierMul = data.tier === 'hard' || data.tier === 'superhard' ? 2 : 1;
     // Onboarding levels give at least 2 stars so the first decor task is affordable right away.
-    const stars = Math.max(n <= 10 ? 2 : 1, 1 + (game.maxCombo >= 7 ? 1 : 0) + (left >= 5 ? 1 : 0)) * tierMul;
-    let coins = CONFIG.winCoinsBase + game.coinsEarned + left * CONFIG.coinsPerStockCard;
+    const stars = (Math.max(n <= 10 ? 2 : 1, 1 + (game.maxCombo >= 7 ? 1 : 0) + (left >= 5 ? 1 : 0)) + (bonusMet(true) ? 1 : 0)) * tierMul;
+    const bonus = bonusMet(true);
+    let coins = CONFIG.winCoinsBase + game.coinsEarned + left * CONFIG.coinsPerStockCard + (bonus ? 60 : 0);
     if (doubleCoins) coins *= 2;
     const s = save.data;
     const before = playerLevel().level;
@@ -803,11 +882,11 @@ async function level({ n }: Params): Promise<Screen> {
     save.commit();
     track('level_win', { n, stars, coins, combo: game.maxCombo, stockLeft: left });
     const levelUp = playerLevel().level > before;
-    showResult(stars, coins, levelUp);
+    showResult(stars, coins, levelUp, bonus);
     if (chest) setTimeout(() => chestModal(chest), 900);
   };
 
-  const showResult = (stars: number, coins: number, levelUp: boolean) => {
+  const showResult = (stars: number, coins: number, levelUp: boolean, bonus: boolean) => {
     const m = modal({ title: t('victory'), cls: 'm-win', closable: false });
     const starsRow = h('div', { class: 'win-stars' });
     for (let k = 0; k < 3; k++) {
@@ -840,6 +919,7 @@ async function level({ n }: Params): Promise<Screen> {
       h('div', { class: 'win-title', text: t('levelComplete', { n }) }),
       starsRow,
       h('div', { class: 'reward-list' }, coinsChip, rewardChip('star', `+${stars}`, t('stars'))),
+      data.bonus ? h('div', { class: `goal-bonus ${bonus ? 'met' : ''}` }, iconEl(bonus ? 'check' : 'close'), h('span', { text: `${t('bonusGoal')} ${bonusText()}` })) : '',
       levelUp ? h('div', { class: 'tier-tag tier-superhard', text: t('levelUp') }) : '',
       x2,
       h(

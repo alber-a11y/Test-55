@@ -185,5 +185,9 @@ export const SFX: Record<string, Layer[]> = {
     { w: 'tri', f: 1047, dur: 0.08, vol: 0.25, delay: 0.08, curve: 0.6 },
     { w: 'tri', f: 1568, dur: 0.3, vol: 0.25, delay: 0.16, curve: 2 },
   ],
+  boom: [
+    { w: 'noise', f: 3000, dur: 0.6, vol: 0.7, lp: 0.12, curve: 2 },
+    { w: 'sin', f: 120, f2: 40, dur: 0.5, vol: 0.6 },
+  ],
   life: [{ w: 'sin', f: 520, f2: 260, dur: 0.4, vol: 0.35, vib: { rate: 7, depth: 0.04 } }],
 };

@@ -1,14 +1,14 @@
 import { Rng } from '../core/rng';
 import { fullDeck, type Card } from './cards';
 import { CLASSIC, PEAK_LAYOUTS, SPECIAL_LAYOUTS, type Layout } from './layouts';
-import type { LevelData, Special, Tier } from './model';
+import type { BonusGoal, LevelData, Special, Tier } from './model';
 import { botWinRate, solve } from './solver';
 
 /** Bump to reshuffle every procedural level (e.g. after a balance change). */
 export const GEN_VERSION = 1;
 
 /** Levels where a new mechanic first appears (with a tutorial hint). */
-export const INTRO = { gold: 8, lock: 16, ice: 26 } as const;
+export const INTRO = { gold: 8, bonus: 12, lock: 16, ice: 26, bomb: 40 } as const;
 
 export function hash(...xs: number[]): number {
   let h = 2166136261 >>> 0;
@@ -88,7 +88,32 @@ function placeSpecials(n: number, layout: Layout, rng: Rng): Record<number, Spec
       if (i >= 0) out[i] = { kind: 'ice', hp: n < 60 ? 1 : rng.int(1, 2) };
     }
   }
+  if (n >= INTRO.bomb && (n === INTRO.bomb || rng.chance(0.35))) {
+    const c = n < 100 ? 1 : rng.int(1, 2);
+    for (let k = 0; k < c; k++) {
+      // Bombs sit on covered cards so the player has to dig towards them.
+      const i = freeSlot((j) => layout.coveredBy[j].length > 0 && layout.slots[j].row <= layout.rows - 2);
+      if (i >= 0) out[i] = { kind: 'bomb', timer: n === INTRO.bomb ? 14 : rng.int(9, 14) };
+    }
+  }
   return out;
+}
+
+/** Optional skill objective (+1 star). Not required to win, so it never affects solvability. */
+function pickBonus(n: number, stockSize: number, rng: Rng): BonusGoal | undefined {
+  if (n < INTRO.bonus || (n !== INTRO.bonus && !rng.chance(0.6))) return undefined;
+  const kinds: BonusGoal['kind'][] = ['combo', 'colorRun', 'stockLeft', 'noBoosters'];
+  const kind = n === INTRO.bonus ? 'combo' : rng.pick(kinds);
+  switch (kind) {
+    case 'combo':
+      return { kind, n: 6 + Math.floor(Math.min(n, 300) / 60) };
+    case 'colorRun':
+      return { kind, n: n < 150 ? 4 : 5 };
+    case 'stockLeft':
+      return { kind, n: Math.max(3, Math.min(8, Math.round(stockSize * 0.22))) };
+    default:
+      return { kind: 'noBoosters' };
+  }
 }
 
 function baseStock(tier: Tier, tableau: number): number {
@@ -141,7 +166,10 @@ export function generateLevel(n: number, opts: { playouts?: number; attempts?: n
     if (w < lo) stockSize = Math.min(maxStock, stockSize + (lo - w > 0.2 ? 2 : 1));
     else stockSize = Math.max(8, stockSize - (w - hi > 0.2 ? 2 : 1));
   }
-  if (best) return best;
+  if (best) {
+    best.bonus = pickBonus(n, best.stock.length, shapeRng);
+    return best;
+  }
   // Fallback (practically never): a generous classic deal.
   const rng = new Rng(hash(n, GEN_VERSION, 999));
   const d = deal(CLASSIC, 51 - CLASSIC.slots.length, rng);

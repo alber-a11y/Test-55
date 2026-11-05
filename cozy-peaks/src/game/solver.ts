@@ -1,5 +1,5 @@
 import { adjacent } from './cards';
-import type { LevelData } from './model';
+import { BOMB_BURN, type LevelData } from './model';
 
 /**
  * Compact simulation of a level for the solver and the difficulty bot.
@@ -20,6 +20,8 @@ interface Compiled {
   start: number;
   iceSlots: number[];
   iceHp: number[];
+  bombSlots: number[];
+  bombTimer: number[];
   fullLo: number;
   fullHi: number;
 }
@@ -59,11 +61,18 @@ export function compile(level: LevelData): Compiled {
   }
   const iceSlots: number[] = [];
   const iceHp: number[] = [];
-  for (const [k, sp] of Object.entries(level.specials))
+  const bombSlots: number[] = [];
+  const bombTimer: number[] = [];
+  for (const [k, sp] of Object.entries(level.specials)) {
     if (sp.kind === 'ice') {
       iceSlots.push(+k);
       iceHp.push(sp.hp);
     }
+    if (sp.kind === 'bomb') {
+      bombSlots.push(+k);
+      bombTimer.push(sp.timer);
+    }
+  }
   return {
     n,
     ranks: level.tableau.map((c) => c.r),
@@ -75,6 +84,8 @@ export function compile(level: LevelData): Compiled {
     start: level.start.r,
     iceSlots,
     iceHp,
+    bombSlots,
+    bombTimer,
     fullLo: fullLo >>> 0,
     fullHi: fullHi >>> 0,
   };
@@ -99,6 +110,21 @@ function crackIce(c: Compiled, ice: number[], lo: number, hi: number, slot: numb
   return out;
 }
 
+/** After a move: tick bombs still on the table; returns new timers and the new stock pointer. */
+function tickBombs(c: Compiled, bombs: number[], lo: number, hi: number, ptr: number): [number[], number] {
+  if (!c.bombSlots.length) return [bombs, ptr];
+  const out = bombs.slice();
+  c.bombSlots.forEach((s, k) => {
+    if (has(lo, hi, s)) return;
+    out[k] -= 1;
+    if (out[k] <= 0) {
+      out[k] = c.bombTimer[k];
+      ptr = Math.min(c.stock.length, ptr + BOMB_BURN);
+    }
+  });
+  return [out, ptr];
+}
+
 export interface SolveResult {
   /** true — winnable, false — proven unwinnable, null — gave up (node limit). */
   solvable: boolean | null;
@@ -115,12 +141,12 @@ export function solve(level: LevelData, nodeLimit = 300_000): SolveResult {
   let stockUsed = 0;
   const LIMIT = {};
 
-  const dfs = (lo: number, hi: number, ptr: number, top: number, ice: number[]): boolean => {
+  const dfs = (lo: number, hi: number, ptr: number, top: number, ice: number[], bombs: number[]): boolean => {
     if (lo === c.fullLo && hi === c.fullHi) {
       stockUsed = ptr;
       return true;
     }
-    const key = `${lo},${hi},${ptr},${top}${ice.length ? ',' + ice.join('') : ''}`;
+    const key = `${lo},${hi},${ptr},${top}${ice.length ? ',' + ice.join('') : ''}${bombs.length ? ';' + bombs.join(',') : ''}`;
     if (seen.has(key)) return false;
     seen.add(key);
     if (++nodes > nodeLimit) throw LIMIT;
@@ -135,14 +161,18 @@ export function solve(level: LevelData, nodeLimit = 300_000): SolveResult {
     for (const i of moves) {
       const nlo = (lo | bitLo(i)) >>> 0;
       const nhi = (hi | bitHi(i)) >>> 0;
-      if (dfs(nlo, nhi, ptr, c.ranks[i], crackIce(c, ice, lo, hi, i))) return true;
+      const [nb, np] = tickBombs(c, bombs, nlo, nhi, ptr);
+      if (dfs(nlo, nhi, np, c.ranks[i], crackIce(c, ice, lo, hi, i), nb)) return true;
     }
-    if (ptr < c.stock.length) return dfs(lo, hi, ptr + 1, c.stock[ptr], ice);
+    if (ptr < c.stock.length) {
+      const [nb, np] = tickBombs(c, bombs, lo, hi, ptr + 1);
+      return dfs(lo, hi, np, c.stock[ptr], ice, nb);
+    }
     return false;
   };
 
   try {
-    const ok = dfs(0, 0, 0, c.start, c.iceHp.slice());
+    const ok = dfs(0, 0, 0, c.start, c.iceHp.slice(), c.bombTimer.slice());
     return { solvable: ok, nodes, stockUsed };
   } catch (e) {
     if (e === LIMIT) return { solvable: null, nodes, stockUsed: 0 };
@@ -167,6 +197,7 @@ function botPlay(c: Compiled, rand: () => number, mistake: number): boolean {
   let ptr = 0;
   let top = c.start;
   let ice = c.iceHp.slice();
+  let bombs = c.bombTimer.slice();
   for (let guard = 0; guard < 400; guard++) {
     if (lo === c.fullLo && hi === c.fullHi) return true;
     const free: number[] = [];
@@ -178,6 +209,7 @@ function botPlay(c: Compiled, rand: () => number, mistake: number): boolean {
     if (!moves.length) {
       if (ptr >= c.stock.length) return false;
       top = c.stock[ptr++];
+      [bombs, ptr] = tickBombs(c, bombs, lo, hi, ptr);
       continue;
     }
     let pick = moves[0];
@@ -208,6 +240,7 @@ function botPlay(c: Compiled, rand: () => number, mistake: number): boolean {
     lo = (lo | bitLo(pick)) >>> 0;
     hi = (hi | bitHi(pick)) >>> 0;
     top = c.ranks[pick];
+    [bombs, ptr] = tickBombs(c, bombs, lo, hi, ptr);
   }
   return false;
 }

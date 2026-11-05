@@ -8,7 +8,19 @@ export type Special =
   | { kind: 'lock'; key: number }
   | { kind: 'key'; lock: number }
   /** Needs `hp` plays from the tableau while it is face up before it can be taken. */
-  | { kind: 'ice'; hp: number };
+  | { kind: 'ice'; hp: number }
+  /** Counts down with every move while on the table; at 0 it burns 3 stock cards and restarts. */
+  | { kind: 'bomb'; timer: number };
+
+/** Optional skill objective of a level: +1 star and coins when met. */
+export type BonusGoal =
+  | { kind: 'combo'; n: number }
+  | { kind: 'colorRun'; n: number }
+  | { kind: 'stockLeft'; n: number }
+  | { kind: 'noBoosters' };
+
+/** Stock cards burnt by an exploding bomb. */
+export const BOMB_BURN = 3;
 
 export type Tier = 'easy' | 'normal' | 'hard' | 'superhard';
 
@@ -25,6 +37,7 @@ export interface LevelData {
   /** First card on the waste pile. */
   start: Card;
   specials: Record<number, Special>;
+  bonus?: BonusGoal;
   tier: Tier;
   /** Estimated win rate of a human-like bot without boosters (0..1). */
   winRate: number;
@@ -39,7 +52,11 @@ interface State {
   stock: Card[];
   waste: WasteCard[];
   ice: Record<number, number>;
+  bombs: Record<number, number>;
   combo: number;
+  /** Current and best run of same-colour plays. */
+  colorRun: number;
+  maxColorRun: number;
   maxCombo: number;
   gold: number;
   coins: number;
@@ -58,8 +75,10 @@ export type GameEvent =
       iceCracked: number[];
       gold: boolean;
       peak: boolean;
+      exploded: number[];
+      burned: number;
     }
-  | { type: 'draw'; card: Card }
+  | { type: 'draw'; card: Card; exploded: number[]; burned: number }
   | { type: 'undo' }
   | { type: 'wild' }
   | { type: 'addCard'; card: Card }
@@ -81,14 +100,21 @@ export class Game {
   constructor(level: LevelData) {
     this.level = level;
     const ice: Record<number, number> = {};
-    for (const [k, sp] of Object.entries(level.specials)) if (sp.kind === 'ice') ice[+k] = sp.hp;
+    const bombs: Record<number, number> = {};
+    for (const [k, sp] of Object.entries(level.specials)) {
+      if (sp.kind === 'ice') ice[+k] = sp.hp;
+      if (sp.kind === 'bomb') bombs[+k] = sp.timer;
+    }
     this.st = {
       removed: level.tableau.map(() => false),
       stock: level.stock.slice(),
       waste: [{ ...level.start }],
       ice,
+      bombs,
       combo: 0,
       maxCombo: 0,
+      colorRun: 0,
+      maxColorRun: 0,
       gold: 0,
       coins: 0,
       plays: 0,
@@ -111,6 +137,12 @@ export class Game {
   }
   get maxCombo(): number {
     return this.st.maxCombo;
+  }
+  get maxColorRun(): number {
+    return this.st.maxColorRun ?? 0;
+  }
+  bombTimer(slot: number): number {
+    return this.st.bombs?.[slot] ?? 0;
   }
   get goldCollected(): number {
     return this.st.gold;
@@ -175,6 +207,29 @@ export class Game {
     if (this.history.length > 200) this.history.shift();
   }
 
+  /** Every move ticks the bombs still on the table. Returns exploded slots and burnt cards. */
+  private tickBombs(): { exploded: number[]; burned: number } {
+    const exploded: number[] = [];
+    let burned = 0;
+    if (!this.st.bombs) this.st.bombs = {};
+    for (const k of Object.keys(this.st.bombs).map(Number)) {
+      if (this.st.removed[k]) {
+        delete this.st.bombs[k];
+        continue;
+      }
+      this.st.bombs[k] -= 1;
+      if (this.st.bombs[k] <= 0) {
+        exploded.push(k);
+        const sp = this.level.specials[k];
+        this.st.bombs[k] = sp?.kind === 'bomb' ? sp.timer : 10;
+        const n = Math.min(BOMB_BURN, this.st.stock.length);
+        this.st.stock.splice(this.st.stock.length - n, n);
+        burned += n;
+      }
+    }
+    return { exploded, burned };
+  }
+
   private openSet(): Set<number> {
     const s = new Set<number>();
     for (let i = 0; i < this.level.tableau.length; i++) if (this.isFree(i)) s.add(i);
@@ -205,6 +260,11 @@ export class Game {
         iceCracked.push(k);
       }
     }
+    const prev = this.top;
+    // Same-colour run counts consecutive tableau plays (a joker keeps the run going).
+    const same = prev.wild || (prev.s === 1 || prev.s === 2) === (card.s === 1 || card.s === 2);
+    this.st.colorRun = (this.st.colorRun ?? 0) > 0 && same ? this.st.colorRun + 1 : 1;
+    this.st.maxColorRun = Math.max(this.st.maxColorRun ?? 0, this.st.colorRun);
     this.st.waste.push({ ...card });
     this.st.combo += 1;
     this.st.plays += 1;
@@ -217,7 +277,9 @@ export class Game {
     }
     if (peak) coins += 15;
     this.st.coins += coins;
-    return { type: 'play', slot, card, combo: this.st.combo, coins, revealed, unlocked, iceCracked, gold, peak };
+    if (this.st.bombs) delete this.st.bombs[slot];
+    const { exploded, burned } = this.tickBombs();
+    return { type: 'play', slot, card, combo: this.st.combo, coins, revealed, unlocked, iceCracked, gold, peak, exploded, burned };
   }
 
   draw(): GameEvent | null {
@@ -226,7 +288,9 @@ export class Game {
     const card = this.st.stock.pop()!;
     this.st.waste.push({ ...card });
     this.st.combo = 0;
-    return { type: 'draw', card };
+    this.st.colorRun = 0;
+    const { exploded, burned } = this.tickBombs();
+    return { type: 'draw', card, exploded, burned };
   }
 
   undo(): GameEvent | null {
@@ -268,6 +332,7 @@ export class Game {
     if (!this.isOpen(slot)) return null;
     this.history = [];
     delete this.st.ice[slot];
+    if (this.st.bombs) delete this.st.bombs[slot];
     const { revealed, unlocked } = this.takeSlot(slot);
     if (this.level.specials[slot]?.kind === 'gold') this.st.gold += 1;
     return { type: 'remove', slot, revealed, unlocked };

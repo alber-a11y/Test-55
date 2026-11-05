@@ -48,12 +48,34 @@ describe('generator', () => {
     expect(Object.values(generateLevel(8).specials).some((s) => s.kind === 'gold')).toBe(true);
     expect(Object.values(generateLevel(16).specials).some((s) => s.kind === 'lock')).toBe(true);
     expect(Object.values(generateLevel(26).specials).some((s) => s.kind === 'ice')).toBe(true);
+    expect(Object.values(generateLevel(40).specials).some((s) => s.kind === 'bomb')).toBe(true);
+    expect(generateLevel(12).bonus?.kind).toBe('combo');
   });
   it('tiers follow the saw', () => {
     expect(tierOf(3)).toBe('easy');
     expect(tierOf(15)).toBe('hard');
     expect(tierOf(20)).toBe('superhard');
     expect(tierOf(21)).toBe('normal');
+  });
+});
+
+describe('bombs', () => {
+  it('tick on every move and burn stock at zero; taking the bomb defuses it', () => {
+    const lvl = generateLevel(40);
+    const g = new Game(lvl);
+    const [slot, sp] = Object.entries(lvl.specials).find(([, s]) => s.kind === 'bomb')!;
+    const timer = (sp as { kind: 'bomb'; timer: number }).timer;
+    expect(g.bombTimer(+slot)).toBe(timer);
+    const stock0 = g.stockCount;
+    for (let k = 0; k < timer; k++) g.draw();
+    // `timer` draws plus 3 burnt cards.
+    expect(g.stockCount).toBe(Math.max(0, stock0 - timer - 3));
+    expect(g.bombTimer(+slot)).toBe(timer);
+    g.undo();
+    expect(g.stockCount).toBe(stock0 - timer + 1);
+  });
+  it('solver accounts for bombs', () => {
+    for (const n of [40, 55, 140, 260]) expect(solve(generateLevel(n)).solvable, `level ${n}`).toBe(true);
   });
 });
 

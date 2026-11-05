@@ -178,3 +178,23 @@
 .tut-hand { position: absolute; left: 0; top: 0; width: 90px; height: 90px; z-index: 95; pointer-events: none; filter: drop-shadow(0 6px 6px rgba(0,0,0,.3)); }
 .tut-hand > svg { animation: tap 1s ease-in-out infinite; transform-origin: 30% 10%; }
 @keyframes tap { 0%, 100% { transform: translate(0, 0) scale(1); } 50% { transform: translate(-6px, -12px) scale(.92); } }
+
+.card .bomb-badge { position: absolute; left: 50%; top: 24%; transform: translate(-50%, -50%); width: 56%; aspect-ratio: 1; z-index: 2; filter: drop-shadow(0 3px 3px rgba(0,0,0,.35)); }
+.card .bomb-badge b { position: absolute; left: 0; right: 14%; top: 26%; bottom: 0; display: grid; place-items: center; color: #fff; font-weight: 900; font-size: 26px; text-shadow: 0 2px 0 #000; }
+.card .bomb-badge.danger { animation: bombPulse .6s ease-in-out infinite; }
+@keyframes bombPulse { 50% { transform: translate(-50%, -50%) scale(1.15); filter: drop-shadow(0 0 10px #ff4d4d); } }
+.burst.boom { background: radial-gradient(circle, rgba(255,200,120,.95), rgba(255,90,40,.55) 40%, rgba(255,90,40,0) 70%); }
+.quake { animation: quake .4s; }
+@keyframes quake { 20% { transform: translate(-6px, 3px); } 40% { transform: translate(6px, -3px); } 60% { transform: translate(-4px, 2px); } 80% { transform: translate(3px, -1px); } }
+.goal-bonus { display: flex; align-items: center; gap: 8px; margin-top: 8px; font-size: 19px; font-weight: 800; color: #8a5a10; line-height: 1.15; text-align: left; }
+.goal-bonus .ico-wrap { width: 34px; height: 34px; flex: none; }
+.goal-bonus.met { color: #2e8a26; }
+.m-win .goal-bonus { font-size: 24px; }
+
+.goal-panel .goal-t { font-size: 20px; }
+.goal-gold { display: flex; align-items: center; gap: 8px; margin-top: 6px; font-size: 19px; font-weight: 800; color: #9a6a10; }
+.goal-gold .ico-wrap { width: 30px; height: 30px; }
+.landscape .goal-panel { padding-top: 40px; width: 420px; }
+.landscape .goal-panel .goal-h { display: none; }
+.landscape .goal-panel .goal-t .ico-wrap { width: 44px; height: 44px; }
+.landscape .goal-panel .goal-gold, .landscape .goal-panel .goal-bonus { margin-top: 4px; }
