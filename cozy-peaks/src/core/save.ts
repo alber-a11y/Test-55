@@ -41,6 +41,8 @@ export interface SaveData {
   cooldowns: Record<string, number>;
   chest: number;
   daily: { day: string; progress: Record<string, number>; claimed: string[] };
+  /** Wheel of fortune: spins used today (the first one is free). */
+  wheel: { day: string; spins: number };
   settings: { sound: number; music: number; hint: boolean };
   /** One-time hints already shown. */
   seen: Record<string, boolean>;
@@ -78,6 +80,7 @@ export function freshSave(): SaveData {
     cooldowns: {},
     chest: 0,
     daily: { day: '', progress: {}, claimed: [] },
+    wheel: { day: '', spins: 0 },
     settings: { sound: 0.8, music: 0.5, hint: true },
     seen: {},
     current: null,

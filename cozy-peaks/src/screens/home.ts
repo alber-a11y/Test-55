@@ -11,6 +11,8 @@ import { hud } from '../ui/hud';
 import { go, register, type Screen } from '../ui/router';
 import { stage } from '../ui/stage';
 import { button, iconEl } from '../ui/widgets';
+import { wheelModal } from '../ui/wheel';
+import { freeSpinReady } from '../meta/wheel';
 import { makeoverPlaque, roomState } from './common';
 
 /** Scene point → stage point for a room drawn with preserveAspectRatio "slice". */
@@ -59,6 +61,10 @@ register('home', (): Screen => {
       h('span', { class: 'badge-ad' }, svgEl(icon('ad'))),
     ),
   );
+  const wheelBadge = h('span', { class: 'badge-alert', text: '!' });
+  const syncWheel = () => (wheelBadge.style.display = freeSpinReady() ? '' : 'none');
+  syncWheel();
+  right.append(h('button', { class: 'side-btn', onclick: () => wheelModal(syncWheel) }, iconEl('wheel'), h('span', { text: t('wheel').split(' ')[0] }), wheelBadge));
 
   el.append(
     bg,

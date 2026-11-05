@@ -99,6 +99,9 @@ export const ICONS = {
     <rect x="34" y="12" width="12" height="10" rx="3" fill="#8b95a1" stroke="#15171f" stroke-width="2.5" transform="rotate(35 40 17)"/>
     <path d="M44 12 C48 6 54 6 56 10" stroke="#8a5a2b" stroke-width="3" fill="none"/>
     <path d="M57 4 l2 5 l5 1 l-4 3 l1 5 l-4 -3 l-5 2 l2 -5 l-3 -4 l5 0 Z" fill="#ffb703" stroke="#e85d04" stroke-width="1.5"/>`),
+  wheel: svg(`<circle cx="32" cy="34" r="25" fill="#fff" stroke="#7a3b5e" stroke-width="4"/>
+    ${[0, 1, 2, 3, 4, 5, 6, 7].map((i) => { const a0 = (i * Math.PI) / 4 - Math.PI / 2; const a1 = a0 + Math.PI / 4; const c = ['#ffd166', '#b892e8', '#7ed957', '#5ec7ff', '#ff9f43', '#ff8fb1', '#e8574a', '#f6c443'][i]; return `<path d="M32 34 L${(32 + Math.cos(a0) * 22).toFixed(1)} ${(34 + Math.sin(a0) * 22).toFixed(1)} A22 22 0 0 1 ${(32 + Math.cos(a1) * 22).toFixed(1)} ${(34 + Math.sin(a1) * 22).toFixed(1)} Z" fill="${c}"/>`; }).join('')}
+    <circle cx="32" cy="34" r="6" fill="#7a3b5e" stroke="#fff" stroke-width="2"/><path d="M26 4 H38 L32 14 Z" fill="#e63946" stroke="#7b1f16" stroke-width="2" stroke-linejoin="round"/>`),
   hand: svg(`<path d="M24 34 V12 a5 5 0 0 1 10 0 V30 V26 a5 5 0 0 1 10 0 V32 a5 5 0 0 1 9 2 V44 C53 54 46 60 36 60 C28 60 22 56 18 48 L10 36 a5 5 0 0 1 8 -6 Z" fill="#fff" stroke="#3b2a6b" stroke-width="3.5" stroke-linejoin="round"/>
     <path d="M34 30 V40 M44 32 V40" stroke="#3b2a6b" stroke-width="3" stroke-linecap="round"/>`),
   trophy: svg(`<path d="M18 8 H46 V24 C46 36 39 42 32 42 C25 42 18 36 18 24Z" fill="#ffc83d" stroke="#b07a10" stroke-width="3"/>
