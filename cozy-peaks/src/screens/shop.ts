@@ -14,7 +14,7 @@ import { h, svgEl } from '../ui/dom';
 import { buyCoins, chestModal, livesModal, rulesModal, settingsModal, watchFor } from '../ui/dialogs';
 import { hud } from '../ui/hud';
 import { go, register, type Screen } from '../ui/router';
-import { button, iconEl, priceButton, toast } from '../ui/widgets';
+import { button, iconEl, modal, priceButton, toast } from '../ui/widgets';
 import { roomState } from './common';
 
 const TABS: { id: ShopTab; key: string; icon: Parameters<typeof iconEl>[0] }[] = [
@@ -48,16 +48,15 @@ function itemVisual(item: ShopItem): HTMLElement {
   }
 }
 
-register('shop', (p: { tab?: ShopTab }): Screen => {
-  let tab: ShopTab = p.tab ?? 'boosters';
-  const el = h('div', { class: 'scr-shop' });
-  const room = roomById(save.data.room);
-  el.append(h('div', { class: 'bg-room blur', html: roomPreview(room.id, roomState(room)) }));
-  el.append(hud({ lives: livesModal, coins: () => ((tab = 'extras'), render()), chest: () => chestModal(), info: rulesModal, settings: () => settingsModal() }));
+/**
+ * Shop content (tabs + grid). Used by the shop screen and by the in-level shop window.
+ * `onChange` fires after any purchase / reward so the host can refresh (e.g. booster counts).
+ */
+export function shopPanel(initial: ShopTab, onChange?: () => void): { root: HTMLElement; setTab: (t: ShopTab) => void } {
+  let tab: ShopTab = initial;
   const tabsEl = h('div', { class: 'shop-tabs' });
   const grid = h('div', { class: 'shop-grid' });
-  const panelEl = h('div', { class: 'panel shop-panel' }, tabsEl, grid);
-  el.append(h('div', { class: 'shop-head' }, h('div', { class: 'ribbon' }, h('span', { text: t('shop') }))), panelEl, button(t('home'), { variant: 'cream', icon: 'house', cls: 'shop-home', onClick: () => void go('home', {}, 'to_home') }));
+  const root = h('div', { class: 'shop-content' }, tabsEl, grid);
 
   const card = (item: ShopItem): HTMLElement => {
     const owned = item.once && itemOwned(item);
@@ -78,6 +77,7 @@ register('shop', (p: { tab?: ShopTab }): Screen => {
           else save.data.frame = g.id;
           save.commit();
           render();
+          onChange?.();
         },
       });
     } else if (owned) {
@@ -90,6 +90,7 @@ register('shop', (p: { tab?: ShopTab }): Screen => {
         if ('coins' in item.price) buyCoins(item);
         else await watchFor(item, `shop_${item.tab}`);
         render();
+        onChange?.();
       });
     }
     return h(
@@ -126,9 +127,33 @@ register('shop', (p: { tab?: ShopTab }): Screen => {
     } else items.forEach((i) => grid.append(card(i)));
   }
   render();
+  // Refresh cooldown timers while visible.
   const iv = window.setInterval(() => {
-    if (!el.isConnected) return clearInterval(iv);
+    if (!root.isConnected) return clearInterval(iv);
     if (grid.querySelector('.si-cd')) render();
   }, 1000);
-  return { el, music: 'home', destroy: () => clearInterval(iv) };
+  return {
+    root,
+    setTab: (tb) => {
+      tab = tb;
+      render();
+    },
+  };
+}
+
+/** Shop window over the current screen (used inside a level: the deal stays as it is). */
+export function shopModal(tab: ShopTab = 'boosters', onChange?: () => void): void {
+  const m = modal({ title: t('shop'), cls: 'm-shop', pause: true });
+  m.body.append(shopPanel(tab, onChange).root);
+}
+
+register('shop', (p: { tab?: ShopTab }): Screen => {
+  const el = h('div', { class: 'scr-shop' });
+  const room = roomById(save.data.room);
+  el.append(h('div', { class: 'bg-room blur', html: roomPreview(room.id, roomState(room)) }));
+  const shop = shopPanel(p.tab ?? 'boosters');
+  el.append(hud({ lives: livesModal, coins: () => shop.setTab('extras'), chest: () => chestModal(), info: rulesModal, settings: () => settingsModal() }));
+  const panelEl = h('div', { class: 'panel shop-panel' }, shop.root);
+  el.append(h('div', { class: 'shop-head' }, h('div', { class: 'ribbon' }, h('span', { text: t('shop') }))), panelEl, button(t('home'), { variant: 'cream', icon: 'house', cls: 'shop-home', onClick: () => void go('home', {}, 'to_home') }));
+  return { el, music: 'home' };
 });

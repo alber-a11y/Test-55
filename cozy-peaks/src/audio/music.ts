@@ -87,7 +87,6 @@ export const TRACKS: Record<string, Track> = {
         notes: bars(rep('. . . . . . . . . . . .', 4), 'F4 _ _ _ _ _ _ _ _ _ _ _', 'E4 _ _ _ _ _ _ _ _ _ _ _', 'D4 _ _ _ _ _ _ _ _ _ _ _', 'C4 _ _ _ _ _ _ _ _ _ _ _'),
       },
     ],
-    shaker: rep('. . x . . . x . . . x .', 8),
   },
   level: {
     bpm: 104,
@@ -166,11 +165,28 @@ function parseVoice(src: string, transpose: number): (Step | null)[] {
   return steps;
 }
 
+/**
+ * Smooth room reverb: noise with an exponential decay that is low-passed more and more
+ * over time (dark tail, no hiss), with a soft fade-in to avoid a click at the start.
+ */
 function makeImpulse(ctx: BaseAudioContext, seconds: number): AudioBuffer {
-  const len = Math.floor(ctx.sampleRate * seconds);
-  const buf = ctx.createBuffer(1, len, ctx.sampleRate);
+  const sr = ctx.sampleRate;
+  const len = Math.floor(sr * seconds);
+  const buf = ctx.createBuffer(1, len, sr);
   const d = buf.getChannelData(0);
-  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 3);
+  let lp = 0;
+  for (let i = 0; i < len; i++) {
+    const t = i / len;
+    const k = 0.5 - 0.42 * t; // low-pass coefficient: brighter early, darker late
+    lp += ((Math.random() * 2 - 1) - lp) * k;
+    const fadeIn = Math.min(1, i / (sr * 0.01));
+    d[i] = lp * Math.exp(-5 * t) * fadeIn;
+  }
+  // Normalise the impulse energy so the wet level stays predictable.
+  let e = 0;
+  for (let i = 0; i < len; i++) e += d[i] * d[i];
+  const g = 1 / Math.sqrt(e / 400);
+  for (let i = 0; i < len; i++) d[i] *= g * 0.05;
   return buf;
 }
 
@@ -190,13 +206,27 @@ export class MusicPlayer {
     this.noise = ctx.createBuffer(1, len, ctx.sampleRate);
     const d = this.noise.getChannelData(0);
     for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    // Soft limiter on the music bus: chords stacking up never clip.
+    const limiter = ctx.createDynamicsCompressor();
+    limiter.threshold.value = -14;
+    limiter.knee.value = 12;
+    limiter.ratio.value = 6;
+    limiter.attack.value = 0.005;
+    limiter.release.value = 0.25;
+    const master = ctx.createGain();
+    master.gain.value = 0.9;
+    limiter.connect(master).connect(out);
     this.dry = ctx.createGain();
-    this.dry.connect(out);
+    this.dry.connect(limiter);
     const verb = ctx.createConvolver();
+    verb.normalize = false;
     verb.buffer = makeImpulse(ctx, 2.2);
+    const verbTone = ctx.createBiquadFilter();
+    verbTone.type = 'lowpass';
+    verbTone.frequency.value = 3200;
     this.wet = ctx.createGain();
     this.wet.gain.value = 0.3;
-    this.wet.connect(verb).connect(out);
+    this.wet.connect(verb).connect(verbTone).connect(limiter);
   }
 
   private load(name: string, transpose: number): boolean {
@@ -302,8 +332,11 @@ export class MusicPlayer {
         env.linearRampToValueAtTime(vol, t + 0.004);
         env.exponentialRampToValueAtTime(0.0005, t + 1.4);
         this.osc('sine', f, t, t + 1.5, filt);
+        // The inharmonic partial fades out on its own before it stops (no click).
         const g2 = this.ctx.createGain();
-        g2.gain.value = 0.25;
+        g2.gain.setValueAtTime(0, t);
+        g2.gain.linearRampToValueAtTime(0.12, t + 0.004);
+        g2.gain.exponentialRampToValueAtTime(0.0003, t + 0.5);
         g2.connect(filt);
         this.osc('sine', f * 2.76, t, t + 0.6, g2);
         break;
@@ -350,8 +383,8 @@ export class MusicPlayer {
         env.linearRampToValueAtTime(vol, t + 0.6);
         env.setValueAtTime(vol, t + Math.max(0.6, dur - 0.2));
         env.exponentialRampToValueAtTime(0.0005, t + dur + 0.8);
-        this.osc('sawtooth', f, t, t + dur + 0.9, filt, -7);
-        this.osc('sawtooth', f, t, t + dur + 0.9, filt, 7);
+        this.osc('triangle', f, t, t + dur + 0.9, filt, -5);
+        this.osc('triangle', f, t, t + dur + 0.9, filt, 5);
         break;
       }
       case 'bass': {

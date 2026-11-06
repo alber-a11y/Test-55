@@ -10,6 +10,7 @@ import { chestModal, goalsModal, livesModal, rulesModal, settingsModal, watchFor
 import { hud } from '../ui/hud';
 import { go, register, type Screen } from '../ui/router';
 import { stage } from '../ui/stage';
+import { placeLabels, spot } from '../ui/spots';
 import { button, iconEl, toast } from '../ui/widgets';
 import { wheelModal } from '../ui/wheel';
 import { freeSpinReady } from '../meta/wheel';
@@ -100,8 +101,8 @@ register('home', (): Screen => {
     spots.replaceChildren();
     if (!task) return;
     const p = scenePoint(task.at.x, task.at.y);
-    const s = h('button', { class: 'spot pulse', style: `left:${p.x}px;top:${p.y}px`, onclick: () => void go('room', { room: room.id, task: task.id }, 'to_room') }, svgEl(icon('brush'), 'spot-ico'), h('span', { text: tr(task.name) }));
-    spots.append(s);
+    spots.append(...spot(p.x, p.y, 'pulse', () => void go('room', { room: room.id, task: task.id }, 'to_room'), svgEl(icon('brush'), 'spot-ico'), h('span', { text: tr(task.name) })));
+    requestAnimationFrame(() => placeLabels(spots, el, '.hud-player, .hud .pill, .hud .chest-bar, .hud .round-btn, .side-btn, .makeover, .home-bottom > *'));
   };
   placeSpots();
   return { el, music: 'home', resize: placeSpots };

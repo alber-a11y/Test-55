@@ -234,7 +234,8 @@ svg { display: block; }
 .modal-ribbon { position: absolute; left: 50%; top: -30px; transform: translateX(-50%); white-space: nowrap; }
 .modal-x { position: absolute; right: -20px; top: -20px; width: 70px; height: 70px; }
 .modal-x .ico-wrap { width: 70px; height: 70px; }
-.modal-body { display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; font-weight: 800; font-size: 28px; overflow-y: auto; overflow-x: hidden; min-height: 0; }
+.modal-body { display: flex; flex-direction: column; align-items: center; gap: 20px; text-align: center; font-weight: 800; font-size: 28px; overflow-y: auto; overflow-x: hidden; min-height: 0; padding: 6px 12px 18px; margin: -6px -12px -18px; scrollbar-width: none; -ms-overflow-style: none; }
+.modal-body::-webkit-scrollbar { display: none; }
 .modal-body p { margin: 0; }
 .muted { color: var(--muted); font-weight: 700; font-size: 24px; }
 .small { font-size: 20px; }
@@ -296,3 +297,6 @@ svg { display: block; }
 #boot .boot-title { font-size: 44px; } #boot .boot-sub { font-size: 22px; color: var(--muted); }
 #boot .boot-bar { width: 280px; height: 18px; border-radius: 10px; background: #d9bf8a; margin-top: 20px; overflow: hidden; border: 3px solid #fff; }
 #boot .boot-fill { height: 100%; width: 0; background: linear-gradient(#9ff27a, #45b83a); transition: width .2s; }
+
+/* While a window is open, toasts move to the bottom so they never cover its title. */
+#stage.has-modal #toasts { justify-content: flex-end; padding-top: 0; padding-bottom: 40px; }

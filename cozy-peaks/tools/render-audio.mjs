@@ -47,7 +47,7 @@ await page.waitForFunction(() => window.audioStudio, null, { timeout: 120000 });
 if (what === 'all' || what === 'music') {
   for (const [name, loops] of Object.entries(MUSIC)) {
     const r = await page.evaluate(([n, l]) => window.audioStudio.renderMusic(n, l), [name, loops]);
-    const mp3 = encodeMp3(r.pcm, r.sampleRate, 48);
+    const mp3 = encodeMp3(r.pcm, r.sampleRate, 128);
     writeFileSync(resolve(OUT, `music_${name}.mp3`), mp3);
     console.log(`music_${name}.mp3  ${(mp3.length / 1024).toFixed(0)} KB`);
   }

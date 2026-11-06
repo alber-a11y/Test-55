@@ -11,6 +11,7 @@ import { buyCoins, chestModal, goalsModal, heroSays, livesModal, rulesModal, set
 import { hud } from '../ui/hud';
 import { go, register, type Screen } from '../ui/router';
 import { stage } from '../ui/stage';
+import { placeLabels, spot } from '../ui/spots';
 import { button, confetti, iconEl, modal, priceButton, toast } from '../ui/widgets';
 import { makeoverPlaque, roomState } from './common';
 
@@ -82,13 +83,11 @@ register('room', (p: { room?: string; task?: string }): Screen => {
       const done = task.id in rs().tasks;
       const sel = task.id === selected.id;
       spots.append(
-        h(
-          'button',
-          {
-            class: `spot ${sel ? 'sel' : ''} ${done ? 'done' : ''}`,
-            style: `left:${ox + task.at.x * s}px;top:${oy + task.at.y * s}px`,
-            onclick: () => select(task),
-          },
+        ...spot(
+          ox + task.at.x * s,
+          oy + task.at.y * s,
+          `${sel ? 'sel' : ''} ${done ? 'done' : ''}`,
+          () => select(task),
           svgEl(icon(done ? 'check' : 'brush'), 'spot-ico'),
           h('span', { text: tr(task.name) }),
           done ? null : h('em', {}, svgEl(icon('star'), 'spot-star'), String(task.cost)),
@@ -97,42 +96,9 @@ register('room', (p: { room?: string; task?: string }): Screen => {
     }
     for (const b of room.bonus) {
       if (rs().bonus.includes(b.id)) continue;
-      spots.append(
-        h('button', { class: 'spot gift', style: `left:${ox + b.at.x * s}px;top:${oy + b.at.y * s}px`, onclick: () => bonusModal(b.id) }, svgEl(icon('gift'), 'spot-ico'), h('span', { text: tr(b.name) })),
-      );
+      spots.append(...spot(ox + b.at.x * s, oy + b.at.y * s, 'gift', () => bonusModal(b.id), svgEl(icon('gift'), 'spot-ico'), h('span', { text: tr(b.name) })));
     }
-    requestAnimationFrame(resolveLabels);
-  };
-
-  /**
-   * Keep hotspot labels readable: if a label hits the HUD, panels or another label,
-   * try it below the anchor or shifted sideways.
-   */
-  const resolveLabels = () => {
-    type R = { x: number; y: number; w: number; h: number };
-    const hit = (a: R, b: R) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
-    const reserved: R[] = [...el.querySelectorAll('.hud-player, .hud .pill, .hud .chest-bar, .hud .round-btn, .side-btn, .room-plaque .makeover, .before-after, .room-home, .decor-strip')].map((e) => stage.rect(e));
-    const placed: R[] = [];
-    const order = ['up', 'down', 'upL', 'upR', 'downL', 'downR'];
-    // The selected label goes first so it keeps the best place.
-    const list = [...spots.children].sort((a, b) => Number(b.classList.contains('sel')) - Number(a.classList.contains('sel'))) as HTMLElement[];
-    for (const sp of list) {
-      let best = 'up';
-      let bestScore = Infinity;
-      for (const pos of order) {
-        sp.dataset.pos = pos;
-        const r = stage.rect(sp);
-        const out = r.x < 0 || r.x + r.w > stage.w || r.y < 0 || r.y + r.h > stage.h;
-        const score = reserved.filter((q) => hit(r, q)).length * 2 + placed.filter((q) => hit(r, q)).length + (out ? 3 : 0);
-        if (score < bestScore) {
-          bestScore = score;
-          best = pos;
-        }
-        if (score === 0) break;
-      }
-      sp.dataset.pos = best;
-      placed.push(stage.rect(sp));
-    }
+    requestAnimationFrame(() => placeLabels(spots, el, '.hud-player, .hud .pill, .hud .chest-bar, .hud .round-btn, .side-btn, .before-after, .room-home, .decor-strip'));
   };
 
   // Drag to pan (portrait / narrow screens).

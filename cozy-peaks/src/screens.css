@@ -223,3 +223,22 @@
 .mini-stages i.on { background: #34c26b; }
 .landscape .decor-strip .ms-ico { display: none; }
 .landscape .decor-strip .ms-text { width: 390px; }
+
+/* ---------- hotspots v2: fixed dot + movable label ---------- */
+.spot { transform: translate(calc(-50% + var(--dx, 0px)), calc(-100% - 24px + var(--dy, 0px))) !important; transition: transform .15s; }
+.spot::before, .spot::after { display: none !important; }
+.spot-dot { position: absolute; z-index: 1; width: 22px; height: 22px; margin: -11px 0 0 -11px; border-radius: 50%; background: #7ed957; border: 4px solid #fff; box-shadow: 0 0 0 2px #4f9d4c, 0 3px 6px rgba(0,0,0,.25); pointer-events: none; }
+.spot-dot.sel { background: #ffd23f; box-shadow: 0 0 0 2px #c98a12, 0 0 12px #ffe066; }
+.spot-dot.gift { background: #ff8fd0; box-shadow: 0 0 0 2px #c94f8f; }
+.spot-dot.done { background: #5ec7ff; box-shadow: 0 0 0 2px #2d7fb8; }
+.spot[data-pos="up"]::after { display: block !important; content: ""; position: absolute; left: 50%; top: auto; bottom: -12px; width: 0; height: 0; margin-left: -8px; background: none; box-shadow: none; border-radius: 0; border: 8px solid transparent; border-top-color: #fff; border-bottom: 0; }
+.spot[data-pos="down"]::after { display: block !important; content: ""; position: absolute; left: 50%; top: -12px; bottom: auto; width: 0; height: 0; margin-left: -8px; background: none; box-shadow: none; border-radius: 0; border: 8px solid transparent; border-bottom-color: #fff; border-top: 0; }
+@keyframes spotPulse { 50% { scale: 1.07; } }
+
+.shop-content { display: flex; flex-direction: column; gap: 18px; min-height: 0; flex: 1; width: 100%; }
+.shop-panel { }
+.m-shop { width: min(1300px, 94%); height: 86%; }
+.portrait .m-shop { height: 80%; }
+.m-shop .modal-body { flex: 1; overflow: hidden; }
+.m-shop .shop-content { height: 100%; }
+.m-shop .shop-grid { scrollbar-width: thin; }

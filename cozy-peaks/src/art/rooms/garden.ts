@@ -12,6 +12,29 @@ const PATH_ST = [
 
 const pathCurve = 'M640 1000 C700 900 820 860 880 780 C930 710 1000 640 1060 560 L1140 560 C1100 650 1040 720 1000 790 C950 880 960 940 980 1000 Z';
 
+type P = [number, number];
+const bez = (a: P, b: P, c: P, d: P, t: number): P => {
+  const u = 1 - t;
+  return [u * u * u * a[0] + 3 * u * u * t * b[0] + 3 * u * t * t * c[0] + t * t * t * d[0], u * u * u * a[1] + 3 * u * u * t * b[1] + 3 * u * t * t * c[1] + t * t * t * d[1]];
+};
+// The two edges of `pathCurve`, both running from the bottom (t=0) to the fountain (t=1).
+const LEFT: [P, P, P, P][] = [
+  [[640, 1000], [700, 900], [820, 860], [880, 780]],
+  [[880, 780], [930, 710], [1000, 640], [1060, 560]],
+];
+const RIGHT: [P, P, P, P][] = [
+  [[980, 1000], [960, 940], [950, 880], [1000, 790]],
+  [[1000, 790], [1040, 720], [1100, 650], [1140, 560]],
+];
+/** Centre and width of the path at t (0 bottom … 1 top). */
+function pathRow(t: number): { cx: number; cy: number; w: number } {
+  const seg = t < 0.5 ? 0 : 1;
+  const lt = seg ? (t - 0.5) * 2 : t * 2;
+  const l = bez(...LEFT[seg], lt);
+  const r = bez(...RIGHT[seg], lt);
+  return { cx: (l[0] + r[0]) / 2, cy: (l[1] + r[1]) / 2 - 6, w: Math.hypot(r[0] - l[0], r[1] - l[1]) };
+}
+
 const path: ItemArt = {
   box: [600, 540, 560, 460],
   draw: (v) => {
@@ -22,18 +45,24 @@ const path: ItemArt = {
     }
     const st = PATH_ST[v];
     let tiles = '';
-    for (let k = 0; k < 13; k++) {
-      const t = k / 12;
-      const x = 680 + (1100 - 680) * Math.pow(t, 0.9) + Math.sin(t * 3) * 30;
-      const y = 990 - 440 * t;
-      const w = 120 - 60 * t;
+    // Rows follow the path outline itself: centre and width come from its left and right edges.
+    const ROWS = 18;
+    for (let k = 0; k < ROWS; k++) {
+      const t = k / (ROWS - 1);
+      const { cx: x, cy: y, w: edgeW } = pathRow(t);
+      const w = edgeW * 0.86;
+      const hRow = 22 - t * 9;
       if (st.kind === 'cobble') {
-        tiles += `<ellipse cx="${x + 30}" cy="${y}" rx="${w * 0.32}" ry="${12 - t * 5}" fill="${shade(st.c, (k % 3) * 0.05)}" stroke="${st.d}" stroke-width="2"/><ellipse cx="${x + 30 - w * 0.35}" cy="${y + 8}" rx="${w * 0.2}" ry="${9 - t * 4}" fill="${shade(st.c, 0.1)}" stroke="${st.d}" stroke-width="2"/><ellipse cx="${x + 30 + w * 0.35}" cy="${y + 6}" rx="${w * 0.2}" ry="${9 - t * 4}" fill="${shade(st.c, -0.05)}" stroke="${st.d}" stroke-width="2"/>`;
+        tiles += `<ellipse cx="${x}" cy="${y}" rx="${w * 0.2}" ry="${hRow * 0.5}" fill="${shade(st.c, (k % 3) * 0.05)}" stroke="${st.d}" stroke-width="2"/><ellipse cx="${x - w * 0.32}" cy="${y + 3}" rx="${w * 0.15}" ry="${hRow * 0.42}" fill="${shade(st.c, 0.1)}" stroke="${st.d}" stroke-width="2"/><ellipse cx="${x + w * 0.32}" cy="${y + 2}" rx="${w * 0.15}" ry="${hRow * 0.42}" fill="${shade(st.c, -0.05)}" stroke="${st.d}" stroke-width="2"/>`;
       } else if (st.kind === 'brick') {
-        tiles += `<rect x="${x + 30 - w / 2}" y="${y - 10}" width="${w / 2 - 3}" height="${20 - t * 8}" rx="3" fill="${shade(st.c, (k % 2) * 0.08)}" stroke="${st.d}" stroke-width="2"/><rect x="${x + 33}" y="${y - 10}" width="${w / 2 - 3}" height="${20 - t * 8}" rx="3" fill="${shade(st.c, ((k + 1) % 2) * 0.08)}" stroke="${st.d}" stroke-width="2"/>`;
+        const off = k % 2 ? w * 0.25 : 0;
+        const bw = w / 2 - 3;
+        tiles += `<rect x="${x - w / 2 + (off ? 0 : 0)}" y="${y - hRow / 2}" width="${off ? w * 0.25 - 3 : bw}" height="${hRow}" rx="3" fill="${shade(st.c, (k % 2) * 0.08)}" stroke="${st.d}" stroke-width="2"/>
+          <rect x="${x - w / 2 + (off ? w * 0.25 : w / 2)}" y="${y - hRow / 2}" width="${off ? bw : bw}" height="${hRow}" rx="3" fill="${shade(st.c, ((k + 1) % 2) * 0.08)}" stroke="${st.d}" stroke-width="2"/>
+          ${off ? `<rect x="${x + w / 4}" y="${y - hRow / 2}" width="${w * 0.25 - 3}" height="${hRow}" rx="3" fill="${shade(st.c, 0.04)}" stroke="${st.d}" stroke-width="2"/>` : ''}`;
       } else {
-        tiles += `<rect x="${x + 30 - w / 2}" y="${y - 12}" width="${w}" height="${24 - t * 10}" rx="${st.kind === 'tile' ? 8 : 4}" fill="${shade(st.c, (k % 2) * 0.04)}" stroke="${st.d}" stroke-width="${st.kind === 'marble' ? 3 : 2}"/>`;
-        if (st.kind === 'marble') tiles += `<path d="M${x + 10} ${y - 4} q20 -6 40 4" stroke="#d8d2c6" stroke-width="2" fill="none"/>`;
+        tiles += `<rect x="${x - w / 2}" y="${y - hRow / 2}" width="${w}" height="${hRow}" rx="${st.kind === 'tile' ? 8 : 4}" fill="${shade(st.c, (k % 2) * 0.04)}" stroke="${st.d}" stroke-width="${st.kind === 'marble' ? 3 : 2}"/>`;
+        if (st.kind === 'marble') tiles += `<path d="M${x - w * 0.2} ${y} q${w * 0.15} -5 ${w * 0.3} 3" stroke="#d8d2c6" stroke-width="2" fill="none"/>`;
       }
     }
     return `<path d="${pathCurve}" fill="${shade(st.c, -0.2)}" opacity=".5"/>${tiles}`;

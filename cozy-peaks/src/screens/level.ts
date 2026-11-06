@@ -21,6 +21,7 @@ import { go, register, type Screen } from '../ui/router';
 import { stage } from '../ui/stage';
 import { button, confetti, flyIcons, floatText, iconEl, modal, ribbon, toast } from '../ui/widgets';
 import { makeoverPlaque, roomState } from './common';
+import { shopModal } from './shop';
 
 interface Params {
   n: number;
@@ -66,6 +67,22 @@ async function level({ n }: Params): Promise<Screen> {
   let doubleCoins = false;
   let idleTimer = 0;
 
+  /** Shop over the level: the deal stays, booster buttons refresh after purchases. */
+  const openShop = (tab: 'boosters' | 'extras') => {
+    if (ended) return;
+    paused = true;
+    shopModal(tab, () => renderBoosters());
+    const back = document.querySelector('#modals .m-shop')?.parentElement;
+    const watch = new MutationObserver(() => {
+      if (!back?.isConnected) {
+        paused = false;
+        renderBoosters();
+        watch.disconnect();
+      }
+    });
+    watch.observe(document.getElementById('modals')!, { childList: true });
+  };
+
   const pauseMenu = () => {
     const m = modal({ title: t('pause'), cls: 'm-pause', pause: true });
     paused = true;
@@ -73,7 +90,12 @@ async function level({ n }: Params): Promise<Screen> {
     m.body.append(
       button(t('continue'), { onClick: () => m.close() }),
       button(t('settings'), { variant: 'blue', icon: 'gear', onClick: () => (m.close(), settingsModal(updateChip)) }),
-      button(t('quit'), { variant: 'red', onClick: () => (m.close(), quit()) }),
+      h(
+        'div',
+        { class: 'row-btns' },
+        button(t('shop'), { variant: 'gold', icon: 'shop', onClick: () => (m.close(), openShop('boosters')) }),
+        button(t('quit'), { variant: 'red', onClick: () => (m.close(), quit()) }),
+      ),
       game.canUndo || game.remaining < data.tableau.length ? h('div', { class: 'muted small', text: t('quitWarn') }) : '',
     );
   };
@@ -96,7 +118,7 @@ async function level({ n }: Params): Promise<Screen> {
     hud(
       {
         lives: livesModal,
-        coins: () => toast(t('shop')),
+        coins: () => openShop('extras'),
         chest: () => chestModal(),
         info: rulesModal,
         settings: pauseMenu,

@@ -86,6 +86,7 @@ export function modal(opts: { title?: string; cls?: string; closable?: boolean; 
     done = true;
     back.classList.add('out');
     modalDepth--;
+    document.getElementById('stage')?.classList.toggle('has-modal', modalDepth > 0);
     if (opts.pause) pauseHub.set('modal', modalDepth > 0);
     setTimeout(() => back.remove(), 180);
     opts.onClose?.();
@@ -98,6 +99,7 @@ export function modal(opts: { title?: string; cls?: string; closable?: boolean; 
   }
   root.append(back);
   modalDepth++;
+  document.getElementById('stage')?.classList.add('has-modal');
   if (opts.pause) pauseHub.set('modal', true);
   audio.play('pop');
   return { el: card, body, close, closed };
