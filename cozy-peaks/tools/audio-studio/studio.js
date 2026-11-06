@@ -37,7 +37,7 @@ async function renderMusic(name, loops) {
 function renderSfx(name) {
   const ctx = new OfflineAudioContext(1, SR, SR);
   const data = renderLayers(ctx, SFX[name]).getChannelData(0);
-  return { sampleRate: SR, pcm: toInt16Base64(data, Math.min(1.6, normGain(data, 0.9))) };
+  return { sampleRate: SR, pcm: toInt16Base64(data, 1) };
 }
 
 window.audioStudio = {

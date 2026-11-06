@@ -32,11 +32,11 @@ export function placeLabels(container: HTMLElement, root: HTMLElement, reservedS
     const dot = sp.previousElementSibling as HTMLElement | null;
     if (dot?.classList.contains('spot-dot')) dot.style.display = visible ? '' : 'none';
     if (!visible) continue;
-    sp.style.setProperty('--dx', '0px');
-    sp.style.setProperty('--dy', '0px');
-    const base = stage.rect(sp);
-    const w = base.w;
-    const hh = base.h;
+    // Computed from the anchor and the label's layout size (not measured on screen),
+    // so the result never depends on an animation in progress.
+    const w = sp.offsetWidth;
+    const hh = sp.offsetHeight;
+    const base = { x: ax - w / 2, y: ay - hh - 24, w, h: hh };
     const below = hh + 44;
     const step = hh + 10;
     const cands: [number, number][] = [

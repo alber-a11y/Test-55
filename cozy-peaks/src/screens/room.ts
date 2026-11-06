@@ -86,7 +86,7 @@ register('room', (p: { room?: string; task?: string }): Screen => {
         ...spot(
           ox + task.at.x * s,
           oy + task.at.y * s,
-          `${sel ? 'sel' : ''} ${done ? 'done' : ''}`,
+          `${sel ? 'sel' : ''} ${done ? 'done' : ''} ${!done && nextTask(room)?.id !== task.id ? 'later' : ''}`,
           () => select(task),
           svgEl(icon(done ? 'check' : 'brush'), 'spot-ico'),
           h('span', { text: tr(task.name) }),
@@ -98,27 +98,32 @@ register('room', (p: { room?: string; task?: string }): Screen => {
       if (rs().bonus.includes(b.id)) continue;
       spots.append(...spot(ox + b.at.x * s, oy + b.at.y * s, 'gift', () => bonusModal(b.id), svgEl(icon('gift'), 'spot-ico'), h('span', { text: tr(b.name) })));
     }
+    room.tasks.forEach((tk, i) => spots.querySelectorAll('.spot')[i]?.setAttribute('data-task', tk.id));
     requestAnimationFrame(() => placeLabels(spots, el, '.hud-player, .hud .pill, .hud .chest-bar, .hud .round-btn, .side-btn, .before-after, .room-home, .decor-strip'));
   };
 
   // Drag to pan (portrait / narrow screens).
-  let drag: { x: number; pan: number } | null = null;
+  let drag: { x: number; pan: number; moved: boolean } | null = null;
   view.addEventListener('pointerdown', (e) => {
-    drag = { x: e.clientX, pan: panX };
+    drag = { x: e.clientX, pan: panX, moved: false };
   });
   const onMove = (e: PointerEvent) => {
     if (!drag) return;
     const dx = (e.clientX - drag.x) / stage.scale;
-    if (Math.abs(dx) < 6) return;
+    if (!drag.moved && Math.abs(dx) < 10) return;
+    drag.moved = true;
     panX = drag.pan + dx;
     const { ox, oy } = geom();
     svgHost.style.transform = `translate(${ox}px, ${oy}px)`;
     spots.style.transform = `translateX(${panX - (drag.pan as number)}px)`;
   };
   window.addEventListener('pointermove', onMove);
+  // A plain tap is not a drag: re-rendering on it would replace the buttons before their click fires.
   const endDrag = () => {
     if (!drag) return;
+    const moved = drag.moved;
     drag = null;
+    if (!moved) return;
     spots.style.transform = '';
     renderScene();
   };
@@ -192,6 +197,17 @@ register('room', (p: { room?: string; task?: string }): Screen => {
   };
 
   const select = (task: TaskDef) => {
+    // Tasks go in order: a later one can't be picked before the current one is done.
+    const next = nextTask(room);
+    if (!(task.id in rs().tasks) && next && task.id !== next.id) {
+      audio.play('error');
+      toast(t('decorFirst', { item: tr(next.name) }), 'bad');
+      const lbl = spots.querySelector<HTMLElement>(`.spot[data-task="${task.id}"]`);
+      lbl?.classList.remove('nope');
+      void lbl?.offsetWidth;
+      lbl?.classList.add('nope');
+      return;
+    }
     audio.play('click');
     selected = task;
     variant = rs().tasks[task.id] ?? 0;
@@ -202,6 +218,7 @@ register('room', (p: { room?: string; task?: string }): Screen => {
 
   const apply = () => {
     const wasDone = selected.id in rs().tasks;
+    if (!wasDone && nextTask(room)?.id !== selected.id) return;
     const stageBefore = roomStage(room);
     if (!doTask(room, selected.id, variant)) {
       audio.play('error');

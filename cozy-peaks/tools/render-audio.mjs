@@ -56,7 +56,7 @@ if (what === 'all' || what === 'sfx') {
   const names = await page.evaluate(() => window.audioStudio.sfxNames());
   for (const name of names) {
     const r = await page.evaluate((n) => window.audioStudio.renderSfx(n), name);
-    const mp3 = encodeMp3(r.pcm, r.sampleRate, 64);
+    const mp3 = encodeMp3(r.pcm, r.sampleRate, 160);
     writeFileSync(resolve(OUT, `sfx_${name}.mp3`), mp3);
   }
   console.log(`${names.length} sfx files`);

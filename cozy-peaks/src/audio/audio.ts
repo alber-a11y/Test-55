@@ -47,7 +47,14 @@ class AudioEngine {
     this.musicBus = this.ctx.createGain();
     this.sfxBus.connect(this.master);
     this.musicBus.connect(this.master);
-    this.master.connect(this.ctx.destination);
+    // Limiter: many sounds at once (cards, coins, music) never clip.
+    const limiter = this.ctx.createDynamicsCompressor();
+    limiter.threshold.value = -8;
+    limiter.knee.value = 6;
+    limiter.ratio.value = 12;
+    limiter.attack.value = 0.002;
+    limiter.release.value = 0.15;
+    this.master.connect(limiter).connect(this.ctx.destination);
     // Synth fallbacks first (instant), then real files replace them as they arrive.
     for (const [k, layers] of Object.entries(SFX)) this.buffers.set(k, renderLayers(this.ctx, layers));
     this.synthMusic = new MusicPlayer(this.ctx, this.musicBus);
@@ -102,7 +109,7 @@ class AudioEngine {
   private applyVolumes(): void {
     if (!this.ctx) return;
     const now = this.ctx.currentTime;
-    this.sfxBus.gain.setTargetAtTime(this.soundVol, now, 0.02);
+    this.sfxBus.gain.setTargetAtTime(this.soundVol * 0.85, now, 0.02);
     this.musicBus.gain.setTargetAtTime(this.musicVol * 0.8, now, 0.02);
   }
 
