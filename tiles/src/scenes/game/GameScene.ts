@@ -123,6 +123,9 @@ export class GameScene extends BaseScene {
     // keep the game state — only rebuild the background and re-layout
     this.children.list.filter((o) => (o as unknown as { depth: number }).depth <= -99).forEach((o) => o.destroy());
     this.addBackground();
+    this.tipBox?.destroy();
+    this.tipBox = undefined;
+    this.hideHand();
     if (this.mode !== 'loading') {
       this.ui.forEach((o) => o.destroy());
       this.ui = [];

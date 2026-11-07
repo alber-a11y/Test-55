@@ -1,5 +1,5 @@
 import { music } from '../audio/music';
-import { iconKey, tileKey } from '../art/textures';
+import { ensureIcons, ensureSkin, iconKey, tileKey } from '../art/textures';
 import { econ } from '../core/economy';
 import { t } from '../core/i18n';
 import { store } from '../core/save';
@@ -32,12 +32,12 @@ export class MenuScene extends BaseScene {
     this.buildLogo(cx, H * 0.24);
 
     const lvl = store.data.level;
-    const playY = H * 0.55;
+    const playY = H * 0.58;
     label(this, cx, playY - 150, t('level', { n: lvl }), 64, { stroke: th.title.stroke });
     const play = new Button(this, cx, playY, { w: 640, h: 190, colors: BTN.green, text: t('play'), fontSize: 92, icon: 'ui_play', iconSize: 96, onClick: () => this.go('Game', { level: lvl }) });
     play.pulse();
 
-    const rowY = H * 0.55 + 300;
+    const rowY = playY + 310;
     const items: Array<[string, string, () => void, boolean]> = [
       ['ui_map', t('map'), () => this.go('Map', {}, { hop: true }), false],
       ['ui_shop', t('shop'), () => this.go('Shop', {}, { hop: true }), false],
@@ -60,7 +60,6 @@ export class MenuScene extends BaseScene {
   }
 
   private buildLogo(x: number, y: number): void {
-    const th = this.theme;
     const set = store.data.equipped.icons;
     const skin = store.data.equipped.skin;
     const deco: Array<[number, number, number, number, number]> = [
@@ -70,13 +69,26 @@ export class MenuScene extends BaseScene {
       [350, 160, -12, 0.72, 9],
       [0, -230, 0, 0.75, 4],
     ];
+    void Promise.all([ensureSkin(this.textures, skin), ensureIcons(this.textures, set, deco.map((d) => d[4]))]).then(() => {
+      if (this.sys.isActive()) this.buildDeco(x, y, deco, set, skin);
+    });
+    this.buildTitle(x, y);
+  }
+
+  private buildDeco(x: number, y: number, deco: Array<[number, number, number, number, number]>, set: string, skin: string): void {
     for (const [dx, dy, rot, s, ic] of deco) {
-      const c = this.add.container(x + dx, y + dy);
+      const c = this.add.container(x + dx, y + dy).setDepth(-1);
       c.add(this.add.image(0, 0, tileKey(skin)));
       c.add(this.add.image(0, -7, iconKey(set, ic)).setDisplaySize(118, 118));
       c.setScale(s).setAngle(rot);
+      c.setAlpha(0);
+      this.tweens.add({ targets: c, alpha: 1, duration: 250 });
       this.tweens.add({ targets: c, y: c.y - 18, angle: rot + 4, yoyo: true, repeat: -1, duration: 1600 + Math.abs(dx) * 2, ease: 'Sine.easeInOut' });
     }
+  }
+
+  private buildTitle(x: number, y: number): void {
+    const th = this.theme;
     const words = t('title').split(' ');
     const mk = (s: string, yy: number, size: number) => {
       const tt = label(this, x, yy, s, size, { stroke: th.title.stroke, strokeW: Math.round(size * 0.17) });

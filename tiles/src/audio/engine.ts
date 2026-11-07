@@ -69,9 +69,10 @@ class AudioEngine {
   }
 
   setMuted(reason: string, on: boolean): void {
+    const was = this.reasons.size > 0;
     if (on) this.reasons.add(reason);
     else this.reasons.delete(reason);
-    this.applyMute();
+    if (was !== this.reasons.size > 0) this.applyMute();
   }
 
   get muted(): boolean {

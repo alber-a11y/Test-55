@@ -17,7 +17,7 @@ export function openDaily(scene: Phaser.Scene, coins: CoinCounter): void {
   const th = THEMES[store.data.equipped.theme] ?? THEMES.theme_sky;
   const available = econ.dailyAvailable();
   const idx = econ.dailyIndex();
-  const p = new Popup(scene, { w: 960, h: 980, title: t('daily'), theme: th, closable: true, backdropCloses: true });
+  const p = new Popup(scene, { w: 960, h: 880, title: t('daily'), theme: th, closable: true, backdropCloses: true });
   const cellW = 210;
   const cellH = 250;
   DAILY.forEach((d, i) => {
@@ -25,7 +25,7 @@ export function openDaily(scene: Phaser.Scene, coins: CoinCounter): void {
     const col = row === 0 ? i : i - 4;
     const n = row === 0 ? 4 : 3;
     const x = (col - (n - 1) / 2) * (cellW + 16);
-    const y = -270 + row * (cellH + 30);
+    const y = -230 + row * (cellH + 30);
     const done = i < idx || (!available && i === idx);
     const cur = i === idx && available;
     const big = i === 6;
@@ -49,14 +49,14 @@ export function openDaily(scene: Phaser.Scene, coins: CoinCounter): void {
     p.close(() => flyCoins(scene, { x: scene.scale.width / 2, y: scene.scale.height / 2 }, coins.iconPos(), d.coins * mult));
   };
   if (available) {
-    p.content.add(new Button(scene, -220, 380, { w: 380, h: 140, colors: BTN.green, text: t('claim'), fontSize: 56, onClick: () => claim(1) }));
-    const adB = new Button(scene, 220, 380, { w: 380, h: 140, colors: BTN.gold, text: t('dailyX2'), icon: 'ui_ad', fontSize: 60, onClick: async () => {
+    p.content.add(new Button(scene, -220, 300, { w: 380, h: 140, colors: BTN.green, text: t('claim'), fontSize: 56, onClick: () => claim(1) }));
+    const adB = new Button(scene, 220, 300, { w: 380, h: 140, colors: BTN.gold, text: t('dailyX2'), icon: 'ui_ad', fontSize: 60, onClick: async () => {
       if (await ads.rewarded('daily_x2')) claim(2);
       else toast(scene, t('adFailed'));
     } });
     adB.pulse();
     p.content.add(adB);
   } else {
-    p.content.add(plain(scene, 0, 380, t('dailyClaimed'), 40, th.panel.text, { wrap: 820 }));
+    p.content.add(plain(scene, 0, 300, t('dailyClaimed'), 40, th.panel.text, { wrap: 820 }));
   }
 }

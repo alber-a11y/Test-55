@@ -68,7 +68,7 @@ async function boot(): Promise<void> {
     }, 150);
   });
   window.addEventListener('beforeunload', () => store.flush());
-  if (new URLSearchParams(location.search).has('debug')) Object.assign(window, { __game: game, __store: store });
+  if (new URLSearchParams(location.search).has('debug')) Object.assign(window, { __game: game, __store: store, __audio: engine });
 }
 
 void boot();

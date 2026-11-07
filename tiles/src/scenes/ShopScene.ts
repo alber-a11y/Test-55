@@ -289,7 +289,7 @@ export class ShopScene extends BaseScene {
     } });
     if (left > 0) freeBtn.pulse();
     mk(210, 'ui_coin', t('freeCoins'), left > 0 ? t('freeCoinsLeft', { n: left }) : t('freeCoinsDone'), freeBtn);
-    const dailyBtn = new Button(this, 0, 0, { w: 460, h: 130, colors: econ.dailyAvailable() ? BTN.green : th.primary, icon: 'ui_gift', text: t('daily'), fontSize: 40, guard: this.view.guard, onClick: () => openDaily(this, this.coins) });
+    const dailyBtn = new Button(this, 0, 0, { w: 460, h: 130, colors: econ.dailyAvailable() ? BTN.green : th.primary, icon: 'ui_gift', text: t('gift'), fontSize: 50, guard: this.view.guard, onClick: () => openDaily(this, this.coins) });
     mk(620, 'ui_gift', t('daily'), econ.dailyAvailable() ? '' : t('dailyClaimed'), dailyBtn);
     this.view.setContentHeight(860);
   }
