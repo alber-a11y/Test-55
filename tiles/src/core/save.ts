@@ -30,7 +30,7 @@ export function defaultSave(): SaveData {
     level: 1,
     stars: [],
     coins: 150,
-    boosters: { undo: 2, magnet: 2, shuffle: 2, slot: 1 },
+    boosters: { undo: 1, magnet: 1, shuffle: 1, slot: 1 },
     owned: ['bg_meadow', 'skin_classic', 'icons_garden', 'theme_sky'],
     equipped: { bg: 'bg_meadow', skin: 'skin_classic', icons: 'icons_garden', theme: 'theme_sky' },
     adProgress: {},

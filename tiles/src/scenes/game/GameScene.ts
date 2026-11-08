@@ -99,7 +99,10 @@ export class GameScene extends BaseScene {
 
     ads.inGameplay = true;
     platform.gameplayStart();
+    const wake = () => this.onWake();
+    this.events.on('wake', wake);
     this.events.once('shutdown', () => {
+      this.events.off('wake', wake);
       ads.inGameplay = false;
       platform.gameplayStop();
     });
@@ -789,30 +792,59 @@ export class GameScene extends BaseScene {
   private openPause(): void {
     if (this.mode !== 'play' || Popup.openCount > 0) return;
     const th = this.theme;
-    const p = new Popup(this, { w: 820, h: 900, title: t('pause'), theme: th, closable: true });
+    const p = new Popup(this, { w: 980, h: 960, title: t('pause'), theme: th, closable: true });
     const s = store.data.settings;
-    const row = (y: number, icon: string, key: TKey, on: boolean, toggle: (v: boolean) => void) => {
-      const b = new Button(this, -190, y, { w: 150, h: 150, colors: on ? th.primary : BTN.gray, icon, iconSize: 84, onClick: () => {
+    const toggle = (x: number, icon: string, key: TKey, on: boolean, apply: (v: boolean) => void) => {
+      const b = new Button(this, x, -330, { w: 400, h: 120, colors: on ? th.primary : BTN.gray, icon, iconSize: 72, text: t(key), fontSize: 40, onClick: () => {
         on = !on;
         b.setColors(on ? th.primary : BTN.gray);
-        toggle(on);
+        apply(on);
       } });
       p.content.add(b);
-      p.content.add(plain(this, -80, y, t(key), 50, th.panel.text, { originX: 0, weight: '900' }));
     };
-    row(-250, 'ui_music', 'music', s.music > 0, (v) => {
+    toggle(-210, 'ui_music', 'music', s.music > 0, (v) => {
       s.music = v ? 0.6 : 0;
       engine.setVolumes(s.music, s.sfx);
       store.save();
     });
-    row(-60, 'ui_sound', 'sounds', s.sfx > 0, (v) => {
+    toggle(210, 'ui_sound', 'sounds', s.sfx > 0, (v) => {
       s.sfx = v ? 0.8 : 0;
       engine.setVolumes(s.music, s.sfx);
       store.save();
     });
-    p.content.add(new Button(this, 0, 140, { w: 560, h: 140, colors: BTN.green, text: t('resume'), fontSize: 56, onClick: () => p.close() }));
-    p.content.add(new Button(this, -145, 300, { w: 270, h: 130, colors: th.primary, text: t('retry'), fontSize: 46, onClick: () => p.close(() => this.go('Game', { level: this.levelN }, { ad: AD_CONFIG.onRetry ? 'retry' : undefined })) }));
-    p.content.add(new Button(this, 145, 300, { w: 270, h: 130, colors: BTN.red, text: t('toMap'), fontSize: 46, onClick: () => p.close(() => this.go('Map', {}, { ad: AD_CONFIG.onExitLevel ? 'level_exit' : undefined })) }));
+    const exitAd = AD_CONFIG.onExitLevel ? 'level_exit' : undefined;
+    p.content.add(new Button(this, 0, -170, { w: 820, h: 140, colors: BTN.green, icon: 'ui_play', text: t('resume'), fontSize: 56, onClick: () => p.close() }));
+    p.content.add(new Button(this, 0, -15, { w: 820, h: 120, colors: BTN.gold, text: t('retry'), fontSize: 48, onClick: () => p.close(() => this.go('Game', { level: this.levelN }, { ad: AD_CONFIG.onRetry ? 'retry' : undefined })) }));
+    const nav: Array<[number, number, string, TKey, () => void]> = [
+      [-210, 140, 'ui_home', 'mainMenu', () => p.close(() => this.go('Menu', {}, { ad: exitAd }))],
+      [210, 140, 'ui_map', 'levelMap', () => p.close(() => this.go('Map', {}, { ad: exitAd }))],
+      [-210, 290, 'ui_shop', 'shop', () => p.close(() => this.openOverLevel('Shop'))],
+      [210, 290, 'ui_gear', 'settings', () => p.close(() => this.openOverLevel('Settings'))],
+    ];
+    for (const [x, y, icon, key, fn] of nav) {
+      p.content.add(new Button(this, x, y, { w: 405, h: 130, colors: th.primary, icon, iconSize: 76, text: t(key), fontSize: 42, onClick: fn }));
+    }
+  }
+
+  /** Shop / Settings from the pause menu: the level sleeps and is resumed by their Back button. */
+  private openOverLevel(key: 'Shop' | 'Settings'): void {
+    this.hideHand();
+    this.tipBox?.destroy();
+    this.tipBox = undefined;
+    ads.inGameplay = false;
+    platform.gameplayStop();
+    this.scene.launch(key, { from: 'Game' });
+    this.scene.sleep();
+  }
+
+  /** Back from Shop / Settings: pick up theme, language and background changes, show the pause menu again. */
+  private onWake(): void {
+    ads.inGameplay = true;
+    platform.gameplayStart();
+    music.play(this.level.hard ? 'hard' : 'game');
+    this.onResize();
+    this.cameras.main.fadeIn(180, 10, 20, 48);
+    this.time.delayedCall(250, () => this.openPause());
   }
 
   // ───────────────────────────── tutorial ─────────────────────────────

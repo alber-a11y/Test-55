@@ -35,10 +35,10 @@ export function sfx(name: SfxName, arg = 0): void {
       break;
     }
     case 'combo':
-      [0, 7, 12, 16, 19].forEach((s, i) => voice.tone(d, t + i * 0.045, mtof(note('G5') + s + Math.min(arg, 6)), 0.18, { type: 'square', vol: 0.06 }));
+      [0, 7, 12, 16, 19].forEach((s, i) => voice.tone(d, t + i * 0.045, mtof(note('G5') + s + Math.min(arg, 6)), 0.18, { type: 'triangle', vol: 0.06 }));
       break;
     case 'blocked':
-      voice.tone(d, t, 180, 0.12, { type: 'square', vol: 0.08, slideTo: 140 });
+      voice.tone(d, t, 180, 0.12, { type: 'triangle', vol: 0.08, slideTo: 140 });
       break;
     case 'undo':
       voice.tone(d, t, 900, 0.22, { type: 'triangle', vol: 0.22, slideTo: 300 });
@@ -49,21 +49,21 @@ export function sfx(name: SfxName, arg = 0): void {
       [0, 3, 7, 12].forEach((s, i) => voice.mallet(d, t + 0.36 + i * 0.04, mtof(note('E5') + s), 0.25, 0.15));
       break;
     case 'magnet':
-      voice.tone(d, t, 200, 0.45, { type: 'sawtooth', vol: 0.06, slideTo: 1200 });
+      voice.tone(d, t, 200, 0.45, { type: 'triangle', vol: 0.06, slideTo: 1200 });
       voice.tone(d, t, 400, 0.45, { type: 'sine', vol: 0.18, slideTo: 1600 });
       break;
     case 'slot':
-      voice.tone(d, t, 400, 0.12, { type: 'square', vol: 0.06, slideTo: 800 });
+      voice.tone(d, t, 400, 0.12, { type: 'triangle', vol: 0.06, slideTo: 800 });
       voice.mallet(d, t + 0.1, mtof(note('A5')), 0.4, 0.25);
       voice.mallet(d, t + 0.16, mtof(note('E6')), 0.4, 0.2);
       break;
     case 'coin':
-      voice.tone(d, t, mtof(note('B5')), 0.08, { type: 'square', vol: 0.07 });
-      voice.tone(d, t + 0.07, mtof(note('E6')), 0.3, { type: 'square', vol: 0.07 });
+      voice.tone(d, t, mtof(note('B5')), 0.08, { type: 'triangle', vol: 0.07 });
+      voice.tone(d, t + 0.07, mtof(note('E6')), 0.3, { type: 'triangle', vol: 0.07 });
       break;
     case 'buy':
       voice.noise(d, t, 0.15, { type: 'highpass', freq: 5000, vol: 0.12 });
-      [note('E6'), note('G6'), note('C7')].forEach((m, i) => voice.tone(d, t + i * 0.06, mtof(m), 0.25, { type: 'square', vol: 0.06 }));
+      [note('E6'), note('G6'), note('C7')].forEach((m, i) => voice.tone(d, t + i * 0.06, mtof(m), 0.25, { type: 'triangle', vol: 0.06 }));
       break;
     case 'unlock':
       [0, 4, 7, 11, 14, 19].forEach((s, i) => voice.mallet(d, t + i * 0.06, mtof(note('C6') + s), 0.5, 0.18));
@@ -76,8 +76,8 @@ export function sfx(name: SfxName, arg = 0): void {
       voice.tone(d, t + 0.05, mtof(note('G5')), 0.12, { type: 'sine', vol: 0.12 });
       break;
     case 'error':
-      voice.tone(d, t, 220, 0.12, { type: 'square', vol: 0.07 });
-      voice.tone(d, t + 0.13, 180, 0.18, { type: 'square', vol: 0.07 });
+      voice.tone(d, t, 220, 0.12, { type: 'triangle', vol: 0.07 });
+      voice.tone(d, t + 0.13, 180, 0.18, { type: 'triangle', vol: 0.07 });
       break;
     case 'star':
       voice.mallet(d, t, mtof(note('E6') + arg * 3), 0.6, 0.25);
@@ -93,8 +93,8 @@ export function sfx(name: SfxName, arg = 0): void {
       voice.tone(d, t, 2400, 0.15, { type: 'sine', vol: 0.1, slideTo: 3200 });
       break;
     case 'lockOpen':
-      voice.tone(d, t, 1800, 0.05, { type: 'square', vol: 0.06 });
-      voice.tone(d, t + 0.06, 1200, 0.05, { type: 'square', vol: 0.06 });
+      voice.tone(d, t, 1800, 0.05, { type: 'triangle', vol: 0.06 });
+      voice.tone(d, t + 0.06, 1200, 0.05, { type: 'triangle', vol: 0.06 });
       voice.mallet(d, t + 0.1, mtof(note('A6')), 0.4, 0.15);
       break;
     case 'reveal':

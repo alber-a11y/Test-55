@@ -4,6 +4,8 @@ import '@fontsource/nunito/cyrillic-800.css';
 import '@fontsource/nunito/cyrillic-900.css';
 import Phaser from 'phaser';
 import { engine } from './audio/engine';
+import { music } from './audio/music';
+import { sfx } from './audio/sfx';
 import { computeSize } from './config';
 import { detectLang, setLang } from './core/i18n';
 import { store } from './core/save';
@@ -68,7 +70,7 @@ async function boot(): Promise<void> {
     }, 150);
   });
   window.addEventListener('beforeunload', () => store.flush());
-  if (new URLSearchParams(location.search).has('debug')) Object.assign(window, { __game: game, __store: store, __audio: engine });
+  if (new URLSearchParams(location.search).has('debug')) Object.assign(window, { __game: game, __store: store, __audio: engine, __music: music, __sfx: sfx });
 }
 
 void boot();

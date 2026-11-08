@@ -42,6 +42,21 @@ export abstract class BaseScene extends Phaser.Scene {
     this.scene.restart(this.sceneData);
   }
 
+  /** Back button: return to the sleeping level if opened from the pause menu, else to the previous screen. */
+  back(): void {
+    if (this.sceneData.from === 'Game' && this.scene.isSleeping('Game')) {
+      if (this.leaving) return;
+      this.leaving = true;
+      this.cameras.main.fadeOut(150, 10, 20, 48);
+      this.cameras.main.once('camerafadeoutcomplete', () => {
+        this.scene.wake('Game');
+        this.scene.stop();
+      });
+      return;
+    }
+    void this.go((this.sceneData.from as string) ?? 'Menu', {}, { hop: true });
+  }
+
   /** Full-screen scenic background (solid color first, bitmap fades in when ready). */
   protected addBackground(id = store.data.equipped.bg, depth = -100): void {
     const base = this.add.rectangle(this.cx, this.H / 2, this.W, this.H, BG_BASE[id] ?? 0x7fd0ff).setDepth(depth).setScrollFactor(0);
@@ -56,6 +71,8 @@ export abstract class BaseScene extends Phaser.Scene {
   async go(key: string, data: Record<string, unknown> = {}, opts: { hop?: boolean; ad?: string } = {}): Promise<void> {
     if (this.leaving) return;
     this.leaving = true;
+    // opened over a sleeping level (from the pause menu) and now going elsewhere: drop that level
+    if (this.sceneData.from === 'Game' && this.scene.key !== 'Game' && this.scene.isSleeping('Game')) this.scene.stop('Game');
     this.input.enabled = false;
     if (opts.ad) await ads.interstitial(opts.ad);
     else if (opts.hop) await ads.menuHop();

@@ -23,7 +23,7 @@ export class SettingsScene extends BaseScene {
     this.addBackground();
     const th = this.theme;
     const { cx, colX, H } = this;
-    new Button(this, colX + 90, 96, { w: 120, h: 120, colors: th.primary, icon: 'ui_back', iconSize: 66, onClick: () => this.go((this.sceneData.from as string) ?? 'Menu', {}, { hop: true }) });
+    new Button(this, colX + 90, 96, { w: 120, h: 120, colors: th.primary, icon: 'ui_back', iconSize: 66, onClick: () => this.back() });
     label(this, cx, 96, t('settings'), 72, { stroke: th.title.stroke });
 
     const pw = 980;

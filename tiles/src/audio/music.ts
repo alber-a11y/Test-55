@@ -172,18 +172,18 @@ class Music {
     const [root, q] = tr.chords[bar];
     const chord = chordNotes(root, q);
     // drums
-    if (tr.kick[s] === 'x') voice.kick(bus, t, 0.42);
+    if (tr.kick[s] === 'x') voice.kick(bus, t, 0.36);
     if (tr.snare[s] === 'x') {
-      voice.noise(bus, t, 0.12, { type: 'bandpass', freq: 1800, q: 0.7, vol: 0.16 });
+      voice.noise(bus, t, 0.12, { type: 'bandpass', freq: 1800, q: 0.7, vol: 0.12 });
       voice.tone(bus, t, 220, 0.06, { type: 'triangle', vol: 0.08 });
     }
-    if (tr.hat[s] === 'x') voice.noise(bus, t, 0.035, { type: 'highpass', freq: 8000, vol: s % 2 ? 0.035 : 0.055 });
+    if (tr.hat[s] === 'x') voice.noise(bus, t, 0.035, { type: 'highpass', freq: 8000, vol: s % 2 ? 0.025 : 0.04 });
     // bass
     const b = tr.bass[s];
     if (b !== '.') {
       const r = chord[0] - 24;
       const m = b === 'R' ? r : b === 'F' ? r + 7 : r + 12;
-      voice.tone(bus, t, mtof(m), sd * 1.6, { type: 'triangle', vol: 0.26, attack: 0.01 });
+      voice.tone(bus, t, mtof(m), sd * 1.6, { type: 'triangle', vol: 0.22, attack: 0.012 });
     }
     // chord stabs
     if (tr.strum[s] === 'x') {

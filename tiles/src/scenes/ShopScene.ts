@@ -45,7 +45,7 @@ export class ShopScene extends BaseScene {
     this.tabBtns = {};
     const th = this.theme;
     const { colX, cx } = this;
-    new Button(this, colX + 90, 96, { w: 120, h: 120, colors: th.primary, icon: 'ui_back', iconSize: 66, onClick: () => this.go((this.sceneData.from as string) ?? 'Menu', {}, { hop: true }) });
+    new Button(this, colX + 90, 96, { w: 120, h: 120, colors: th.primary, icon: 'ui_back', iconSize: 66, onClick: () => this.back() });
     label(this, cx - 60, 96, t('shop'), 72, { stroke: th.title.stroke });
     this.coins = new CoinCounter(this, colX + 1080 - 190, 96, () => this.selectTab('coins'));
 
